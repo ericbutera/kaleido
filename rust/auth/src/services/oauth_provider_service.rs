@@ -1,7 +1,9 @@
 use crate::entities::oauth_providers;
 use crate::error::AuthError;
 use crate::services::provider_settings;
+#[cfg(feature = "aws-secrets")]
 use aws_config;
+#[cfg(feature = "aws-secrets")]
 use aws_sdk_secretsmanager as sm;
 use chrono::Utc;
 use sea_orm::{ActiveModelTrait, ColumnTrait, DatabaseConnection, EntityTrait, QueryFilter, Set};
