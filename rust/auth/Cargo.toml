@@ -1,0 +1,63 @@
+[package]
+name = "auth"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+# Web framework
+axum = { workspace = true }
+tower-http = { workspace = true }
+
+# Async
+async-trait = { workspace = true }
+
+# Database
+sea-orm = { workspace = true }
+
+# Serialization
+serde = { workspace = true }
+serde_json = { workspace = true }
+
+# Validation
+validator = { workspace = true }
+
+# JWT & Auth
+jsonwebtoken = { workspace = true }
+argon2 = { workspace = true }
+
+# Time
+chrono = { workspace = true }
+
+# Async
+tokio = { workspace = true }
+
+# Utilities
+uuid = { workspace = true }
+rand = { workspace = true }
+once_cell = { workspace = true }
+
+# OpenAPI
+utoipa = { version = "5", features = ["axum_extras", "chrono"] }
+
+# Tracing
+tracing = { workspace = true }
+
+# HTTP client for OAuth
+reqwest = { workspace = true }
+oauth2 = { workspace = true }
+
+# AWS for secrets management (optional)
+aws-config = { workspace = true, optional = true }
+aws-sdk-secretsmanager = { workspace = true, optional = true }
+
+# URL parsing
+url = { workspace = true }
+
+# HTTP
+http = { workspace = true }
+
+[features]
+default = []
+aws-secrets = ["aws-config", "aws-sdk-secretsmanager"]
+
+[dev-dependencies]

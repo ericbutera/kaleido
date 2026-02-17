@@ -1,0 +1,79 @@
+# Kaleido
+
+A multi-language monorepo for shared components across SaaS applications.
+
+## Structure
+
+```
+kaleido/
+├── rust/               # Rust crates
+│   ├── auth/           # Authentication & authorization
+│   ├── background_jobs/ # Background job processing
+│   └── Cargo.toml      # Rust workspace
+├── typescript/         # TypeScript/npm packages
+│   ├── auth-ui/        # React auth components
+│   └── package.json    # npm workspace
+├── go/                 # Go modules (future)
+└── README.md
+```
+
+## Language-Specific Workspaces
+
+### Rust Workspace
+
+```bash
+cd rust
+cargo build
+cargo test
+```
+
+### TypeScript Workspace
+
+```bash
+cd typescript
+npm install
+npm run build
+```
+
+## Packages
+
+### Rust
+
+- **auth** - JWT authentication, cookies, user management, OAuth
+- **background_jobs** - Durable background job queue with memory/persistent storage
+
+### TypeScript
+
+- **@kaleido/auth-ui** - React authentication UI components
+
+## Publishing
+
+### Rust Crates
+
+```bash
+cd rust/auth
+cargo publish
+```
+
+### npm Packages
+
+```bash
+cd typescript/auth-ui
+npm publish --access public
+```
+
+## Development
+
+Each language workspace is independent. Navigate to the appropriate directory and use standard tooling for that ecosystem.
+
+### Adding New Packages
+
+**Rust**: Add new crate directory and reference in `rust/Cargo.toml`
+
+**TypeScript**: Add new package directory and reference in `typescript/package.json` workspaces
+
+**Go**: Add new module directory with `go.mod`
+
+## License
+
+MIT

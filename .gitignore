@@ -1,0 +1,50 @@
+# Rust
+/rust/target/
+/rust/**/target/
+**/Cargo.lock
+*.pdb
+
+# TypeScript/Node
+/typescript/node_modules/
+/typescript/**/node_modules/
+/typescript/**/dist/
+/typescript/**/*.tsbuildinfo
+*.log
+package-lock.json
+pnpm-lock.yaml
+yarn.lock
+
+# Go
+/go/bin/
+/go/pkg/
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# Build artifacts
+*.o
+*.a
+*.out
+
+# Environment
+.env
+.env.local
+.env.*.local
+
+# Testing
+coverage/
+*.test
+
+# Misc
+*.bak
+*.tmp
