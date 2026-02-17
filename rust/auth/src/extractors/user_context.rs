@@ -1,8 +1,8 @@
 use crate::entities::users;
 use crate::error::AuthError;
 use crate::extractors::{ApiClientIdentity, AuthIdentity, AuthInfo, AuthStorage};
+use async_trait::async_trait;
 use axum::{
-    async_trait,
     extract::{FromRef, FromRequestParts},
     http::request::Parts,
 };
