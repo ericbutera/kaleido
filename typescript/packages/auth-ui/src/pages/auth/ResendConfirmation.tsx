@@ -28,7 +28,7 @@ export default function ResendConfirmation() {
     try {
       await resend.mutateAsync({ email: data.email.trim() }, setError);
       toast.success(
-        "Confirmation email sent! Please check your inbox shortly."
+        "Confirmation email sent! Please check your inbox shortly.",
       );
     } catch (err) {
       // Errors are mapped into the form by the mutation; nothing else to do here.

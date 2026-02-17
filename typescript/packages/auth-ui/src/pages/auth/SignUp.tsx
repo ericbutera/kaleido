@@ -2,8 +2,8 @@ import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { Link, useNavigate } from "react-router-dom";
 import Layout from "../../components/auth/Layout";
-import { handleFormError } from "../../lib/form";
 import { useAuthApi } from "../../lib/AuthContext";
+import { handleFormError } from "../../lib/form";
 import type { RegisterRequest } from "../../lib/types";
 
 type SignUp = RegisterRequest & {

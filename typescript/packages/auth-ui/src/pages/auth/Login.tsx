@@ -4,8 +4,8 @@ import { useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { Link, useNavigate } from "react-router-dom";
 import Layout from "../../components/auth/Layout";
-import { handleFormError } from "../../lib/form";
 import { useAuthApi } from "../../lib/AuthContext";
+import { handleFormError } from "../../lib/form";
 
 export default function Login() {
   // TODO: signup-layout (small card centered on page)

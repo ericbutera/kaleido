@@ -132,7 +132,7 @@ export function createAuthApiClient(): AuthApiClient {
     useLoginUser() {
       const mutation = $api.useMutation("post", "/auth/login");
       const queryClient = useQueryClient();
-      
+
       return {
         mutateAsync: async (data, setError) => {
           try {
@@ -155,7 +155,7 @@ export function createAuthApiClient(): AuthApiClient {
         isPending: mutation.isPending,
       };
     },
-    
+
     // ... implement other methods (see full example in kaleido/typescript/packages/auth-ui/README.md)
   };
 }
@@ -252,7 +252,7 @@ background_jobs = { path = "../background_jobs" }
 
 ### After
 ```toml
-# mycorner-axum/api/Cargo.toml  
+# mycorner-axum/api/Cargo.toml
 [dependencies]
 auth = { git = "https://github.com/yourusername/kaleido", branch = "main" }
 background_jobs = { git = "https://github.com/yourusername/kaleido", branch = "main", features = ["durable"] }

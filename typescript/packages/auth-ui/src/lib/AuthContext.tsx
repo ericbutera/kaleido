@@ -11,9 +11,7 @@ export function AuthProvider({
   children: ReactNode;
 }) {
   return (
-    <AuthApiContext.Provider value={client}>
-      {children}
-    </AuthApiContext.Provider>
+    <AuthApiContext.Provider value={client}>{children}</AuthApiContext.Provider>
   );
 }
 
@@ -26,7 +24,7 @@ export function useAuthApi(): AuthApiClient {
   if (!context) {
     throw new Error(
       "useAuthApi must be used within AuthProvider. " +
-        "Wrap your app with <AuthProvider client={yourApiClient}>"
+        "Wrap your app with <AuthProvider client={yourApiClient}>",
     );
   }
   return context;

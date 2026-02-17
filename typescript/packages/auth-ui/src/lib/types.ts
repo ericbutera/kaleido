@@ -54,7 +54,7 @@ export interface AuthApiClient {
   useLoginUser(): {
     mutateAsync: (
       data: LoginRequest,
-      setError?: UseFormSetError<any>
+      setError?: UseFormSetError<any>,
     ) => Promise<void>;
     isPending: boolean;
   };
@@ -65,7 +65,7 @@ export interface AuthApiClient {
   useRegisterUser(): {
     mutateAsync: (
       data: RegisterRequest,
-      setError?: UseFormSetError<any>
+      setError?: UseFormSetError<any>,
     ) => Promise<void>;
     isPending: boolean;
   };
@@ -74,7 +74,10 @@ export interface AuthApiClient {
    * Forgot password mutation hook
    */
   useForgotPassword(): {
-    mutateAsync: (email: string, setError?: UseFormSetError<any>) => Promise<void>;
+    mutateAsync: (
+      email: string,
+      setError?: UseFormSetError<any>,
+    ) => Promise<void>;
     isPending: boolean;
   };
 
@@ -84,7 +87,7 @@ export interface AuthApiClient {
   useResetPassword(): {
     mutateAsync: (
       data: ResetRequest,
-      setError?: UseFormSetError<any>
+      setError?: UseFormSetError<any>,
     ) => Promise<void>;
     isPending: boolean;
   };
@@ -93,7 +96,10 @@ export interface AuthApiClient {
    * Verify email mutation hook
    */
   useVerifyEmail(): {
-    mutateAsync: (token: string, setError?: UseFormSetError<any>) => Promise<void>;
+    mutateAsync: (
+      token: string,
+      setError?: UseFormSetError<any>,
+    ) => Promise<void>;
     isPending: boolean;
   };
 
@@ -103,7 +109,7 @@ export interface AuthApiClient {
   useResendConfirmationEmail(): {
     mutateAsync: (
       data: ResendConfirmationRequest,
-      setError?: UseFormSetError<any>
+      setError?: UseFormSetError<any>,
     ) => Promise<void>;
     isPending: boolean;
   };

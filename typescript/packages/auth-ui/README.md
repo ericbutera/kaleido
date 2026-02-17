@@ -37,7 +37,7 @@ export function createAuthApiClient(): AuthApiClient {
     useLoginUser() {
       const mutation = $api.useMutation("post", "/auth/login");
       const queryClient = useQueryClient();
-      
+
       return {
         mutateAsync: async (data, setError) => {
           try {
@@ -60,7 +60,7 @@ export function createAuthApiClient(): AuthApiClient {
         isPending: mutation.isPending,
       };
     },
-    
+
     // ... implement other methods
   };
 }
@@ -86,13 +86,13 @@ function App() {
 
 ```tsx
 // src/routes.tsx
-import { 
-  Login, 
-  SignUp, 
-  ForgotPassword, 
-  Reset, 
+import {
+  Login,
+  SignUp,
+  ForgotPassword,
+  Reset,
   Verify,
-  ResendConfirmation 
+  ResendConfirmation
 } from '@kaleido/auth-ui';
 
 export const router = createBrowserRouter([

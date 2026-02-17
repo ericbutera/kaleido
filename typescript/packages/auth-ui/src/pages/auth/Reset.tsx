@@ -34,13 +34,13 @@ export default function Reset() {
     try {
       await reset.mutateAsync(
         { token: data.token, password: data.password },
-        setError
+        setError,
       );
       setComplete(true);
     } catch (err: any) {
       if (err?.message?.includes("expired")) {
         toast.error(
-          "Reset token has expired. Please request a new password reset."
+          "Reset token has expired. Please request a new password reset.",
         );
         navigate("/forgot-password");
         return;
