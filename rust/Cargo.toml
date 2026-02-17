@@ -55,7 +55,7 @@ reqwest = { version = "0.12", features = ["json", "rustls-tls"] }
 validator = { version = "0.18", features = ["derive"] }
 
 # OAuth
-oauth2 = "5.0"
+oauth2 = "4.4"
 
 # AWS
 aws-config = "1.5"
