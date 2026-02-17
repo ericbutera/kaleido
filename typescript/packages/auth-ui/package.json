@@ -36,10 +36,16 @@
         "@fortawesome/react-fontawesome": "^3.1.1"
     },
     "devDependencies": {
+        "@tanstack/react-query": "^5.90.12",
         "@types/react": "^19.2.5",
         "@types/react-dom": "^19.2.3",
         "@vitejs/plugin-react": "^5.1.1",
         "eslint": "^9.39.1",
+        "react": "^19.2.0",
+        "react-dom": "^19.2.0",
+        "react-hook-form": "^7.71.1",
+        "react-hot-toast": "^2.6.0",
+        "react-router-dom": "^7.10.1",
         "typescript": "~5.9.3",
         "vite": "^7.2.4",
         "vite-plugin-dts": "^4.3.0"
