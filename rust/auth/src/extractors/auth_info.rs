@@ -2,9 +2,11 @@ use crate::cookies::REFRESH_COOKIE_NAME;
 use crate::entities::{api_clients, refresh_tokens};
 use crate::error::AuthError;
 use crate::tokens::{verify_access_token, TokenType};
-use async_trait::async_trait;
 use axum::http::request::Parts;
-use axum::extract::{FromRef, FromRequestParts};
+use axum::{
+    async_trait,
+    extract::{FromRef, FromRequestParts},
+};
 use sea_orm::{DatabaseConnection, EntityTrait};
 use std::sync::Arc;
 use uuid::Uuid;
