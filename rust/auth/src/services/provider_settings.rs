@@ -1,6 +1,5 @@
 use crate::error::AuthError;
-use crate::services::oauth_provider_service::OAuthProviderService;
-use sea_orm::DatabaseConnection;
+// No DB usage in provider settings anymore
 
 /// Known provider identifiers
 pub const PROVIDER_GOOGLE: &str = "google";
@@ -21,12 +20,8 @@ pub struct ProviderConfig {
     pub userinfo_url: String,
 }
 
-pub async fn get_provider_config(
-    db: &DatabaseConnection,
-    name: &str,
-    api_url: &str,
-) -> Result<ProviderConfig, AuthError> {
-    let model = OAuthProviderService::get_by_provider(db, name).await?;
+pub async fn get_provider_config(name: &str, api_url: &str) -> Result<ProviderConfig, AuthError> {
+    // DB is no longer used; configuration comes from environment variables and code constants.
 
     // 1. Centralize redirect URL generation
     let redirect_url = format!(
@@ -35,67 +30,29 @@ pub async fn get_provider_config(
         name
     );
 
-    // 2. Handle the case where no DB record exists
-    let m = match model {
-        Some(m) => m,
-        None if name == PROVIDER_GOOGLE => {
-            return Ok(ProviderConfig {
-                provider: name.to_string(),
-                client_id: String::new(),
-                client_secret: String::new(),
-                redirect_url,
-                auth_url: GOOGLE_AUTH_URL.to_string(),
-                token_url: GOOGLE_TOKEN_URL.to_string(),
-                userinfo_url: GOOGLE_USERINFO_URL.to_string(),
-            });
-        }
-        None => {
-            return Err(AuthError::internal_error(format!(
-                "Unsupported provider: {name}"
-            )))
-        }
-    };
+    // 2. For Google we read client id/secret from env vars; other providers are unsupported.
+    if name != PROVIDER_GOOGLE {
+        return Err(AuthError::internal_error(format!(
+            "Unsupported provider: {name}"
+        )));
+    }
 
-    // 3. Resolve Client Secret (Secret Manager)
-    // Attempt to fetch from a secrets manager (GCP by default). If retrieval fails,
-    // fall back to the stored value in the DB.
-    let client_secret = if name == PROVIDER_GOOGLE && !m.client_secret.trim().is_empty() {
-        match crate::secrets_manager::create_secrets_manager(None).await {
-            Ok(sm) => match sm.get_secret(&m.client_secret).await {
-                Ok(s) => s,
-                Err(_) => m.client_secret.clone(),
-            },
-            Err(_) => m.client_secret.clone(),
-        }
-    } else {
-        m.client_secret.clone()
-    };
+    // Support both GCP_ and GOOGLE_ prefixed env vars (GCP_* preferred).
+    let client_id = std::env::var("GCP_OAUTH_CLIENT_ID")
+        .or_else(|_| std::env::var("GOOGLE_OAUTH_CLIENT_ID"))
+        .unwrap_or_default();
+    let client_secret = std::env::var("GCP_OAUTH_CLIENT_SECRET")
+        .or_else(|_| std::env::var("GOOGLE_OAUTH_CLIENT_SECRET"))
+        .unwrap_or_default();
 
     // 4. Determine URLs (Google uses constants; others use DB with fallback)
-    let is_google = name == PROVIDER_GOOGLE;
-    let auth_url = if is_google {
-        GOOGLE_AUTH_URL.into()
-    } else {
-        m.auth_url.unwrap_or(GOOGLE_AUTH_URL.into())
-    };
-    let token_url = if is_google {
-        GOOGLE_TOKEN_URL.into()
-    } else {
-        m.token_url.unwrap_or(GOOGLE_TOKEN_URL.into())
-    };
-    let userinfo_url = if is_google {
-        GOOGLE_USERINFO_URL.into()
-    } else {
-        m.userinfo_url.unwrap_or(GOOGLE_USERINFO_URL.into())
-    };
-
     Ok(ProviderConfig {
-        provider: m.provider_name,
-        client_id: m.client_id,
+        provider: name.to_string(),
+        client_id,
         client_secret,
         redirect_url,
-        auth_url,
-        token_url,
-        userinfo_url,
+        auth_url: GOOGLE_AUTH_URL.to_string(),
+        token_url: GOOGLE_TOKEN_URL.to_string(),
+        userinfo_url: GOOGLE_USERINFO_URL.to_string(),
     })
 }

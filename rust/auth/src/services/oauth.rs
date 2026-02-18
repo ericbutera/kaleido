@@ -58,7 +58,6 @@ impl OAuthService {
     /// Build an authorization URL from an explicit ProviderConfig (without reading DB).
     pub async fn build_authorization_url_from_config(
         cfg: &provider_settings::ProviderConfig,
-        _db: &DatabaseConnection,
     ) -> Result<oauth2::url::Url, AuthError> {
         let client = Self::create_client_from_config(cfg.clone())?;
 
@@ -77,11 +76,11 @@ impl OAuthService {
 
     /// Generate authorization URL for a named provider (eg. "google")
     pub async fn get_authorization_url(
-        db: &DatabaseConnection,
+        _db: &DatabaseConnection,
         provider: &str,
         api_url: &str,
     ) -> Result<OAuthAuthorizeUrl, AuthError> {
-        let cfg = provider_settings::get_provider_config(db, provider, api_url).await?;
+        let cfg = provider_settings::get_provider_config(provider, api_url).await?;
 
         let client = Self::create_client_from_config(cfg.clone())?;
 
@@ -107,12 +106,12 @@ impl OAuthService {
     /// Exchange authorization code for access token and get user info for a provider.
     /// Currently only Google is implemented.
     pub async fn exchange_code_and_get_user(
-        db: &DatabaseConnection,
+        _db: &DatabaseConnection,
         provider: &str,
         code: String,
         api_url: &str,
     ) -> Result<GoogleUserInfo, AuthError> {
-        let cfg = provider_settings::get_provider_config(db, provider, api_url).await?;
+        let cfg = provider_settings::get_provider_config(provider, api_url).await?;
         let client = Self::create_client_from_config(cfg.clone())?;
 
         // Exchange the code for an access token
