@@ -159,7 +159,6 @@ where
     metrics: M,
     config: F,
 }
-
 impl<E, C, A, M, F> AuthService<E, C, A, M, F>
 where
     E: EmailService,
@@ -178,9 +177,48 @@ where
         }
     }
 
-    fn argon2<'a>() -> Argon2<'a> {
-        Argon2::default()
+    // --- INTERNAL ORCHESTRATORS (The "Magic" simplification) ---
+
+    async fn gatekeep(&self, kind: CooldownType, id: Option<i32>) -> Result<(), AuthError> {
+        self.cooldown
+            .check_cooldown(kind, id)
+            .await
+            .map_err(|e| AuthError::too_many_requests(e.message, e.retry_after_seconds))
     }
+
+    async fn log_and_track(
+        &self,
+        event: AuthEventType,
+        user: Option<&users::Model>,
+        reason: Option<&str>,
+    ) {
+        let (u_id, u_email) = user
+            .map(|u| (Some(u.id), Some(u.email.clone())))
+            .unwrap_or((None, None));
+
+        let _ = self
+            .audit
+            .log_event(
+                event.clone(),
+                AuthEventPayload {
+                    user_id: u_id,
+                    email: u_email,
+                    reason: reason.map(|s| s.to_string()),
+                    ..Default::default()
+                },
+            )
+            .await;
+
+        match event {
+            AuthEventType::LoginSucceeded => self.metrics.record_login(),
+            AuthEventType::LoginFailed => self.metrics.record_failed_login(),
+            AuthEventType::TokenRefresh => self.metrics.record_token_refresh(),
+            AuthEventType::Logout => self.metrics.record_logout(),
+            _ => {}
+        }
+    }
+
+    // --- PUBLIC API ---
 
     pub async fn register(
         &self,
@@ -189,35 +227,18 @@ where
     ) -> Result<RegisterResponse, AuthError> {
         payload.validate()?;
 
+        let password_hash = Self::hash_password(&payload.password).await?;
         let email = payload.email.clone();
         let name = payload.name.clone();
-        let password_hash = Self::hash_password(payload.password.clone()).await?;
 
         let am = payload.into_active_model(password_hash);
+        let res = am.insert(db).await.map_err(Self::handle_db_error)?;
 
-        let res = am.insert(db).await.map_err(|e| {
-            // Check for unique constraint violation on email
-            if let sea_orm::DbErr::Exec(sea_orm::RuntimeErr::SqlxError(sqlx_err)) = &e {
-                if let Some(db_err) = sqlx_err.as_database_error() {
-                    if let Some(constraint) = db_err.constraint() {
-                        if constraint.contains("email") {
-                            return AuthError::validation("This email is already registered");
-                        }
-                    }
-                }
-            }
-            AuthError::from(e)
-        })?;
-
-        // Generate verification URL
-        let verification_token = res.email_verification_token.clone().unwrap();
         let verification_url = format!(
             "{}/verify?token={}",
             self.config.frontend_url(),
-            verification_token
+            res.email_verification_token.clone().unwrap()
         );
-
-        // Send registration email asynchronously
         self.email
             .send_registration_email(email, name, verification_url)
             .await;
@@ -242,7 +263,6 @@ where
             return Err(AuthError::validation("Email already verified"));
         }
 
-        // Check if token is expired (24 hours)
         if let Some(sent_at) = user.email_verification_sent_at {
             let expiry_time = sent_at + chrono::Duration::hours(24);
             if Utc::now() > expiry_time {
@@ -277,10 +297,7 @@ where
         }
 
         // Check cooldown
-        self.cooldown
-            .check_cooldown(CooldownType::EmailResend, Some(user.id))
-            .await
-            .map_err(|e| AuthError::validation(e.message))?;
+        self.gatekeep(CooldownType::EmailResend, Some(user.id)).await?;
 
         let new_token = Uuid::new_v4().to_string();
 
@@ -295,60 +312,9 @@ where
             .send_registration_email(user.email.clone(), user.name.clone(), verification_url)
             .await;
 
-        self.cooldown
-            .update_cooldown(CooldownType::EmailResend, Some(user.id))
-            .await
-            .map_err(|e| AuthError::validation(e.message))?;
-
-        Ok(())
-    }
-
-    pub async fn forgot_password(
-        &self,
-        db: &DatabaseConnection,
-        payload: ForgotPasswordRequest,
-    ) -> Result<(), AuthError> {
-        payload.validate()?;
-
-        let user = match users::Model::find_by_email(db, &payload.email).await? {
-            Some(u) => u,
-            None => return Ok(()), // Silently succeed to prevent user enumeration
-        };
-
-        // Check cooldown
-        self.cooldown
-            .check_cooldown(CooldownType::EmailForgotPassword, Some(user.id))
-            .await
-            .map_err(|e| AuthError::validation(e.message))?;
-
-        let reset_token = Uuid::new_v4().to_string();
-
-        let mut user_am: users::ActiveModel = user.clone().into();
-        user_am.reset_token = Set(Some(reset_token.clone()));
-        user_am.reset_sent_at = Set(Some(Utc::now()));
-        user_am.update(db).await?;
-
-        let reset_url = format!("{}/reset?token={}", self.config.frontend_url(), reset_token);
-
-        self.email
-            .send_password_reset_email(user.email.clone(), user.name.clone(), reset_url, 24)
-            .await;
-
-        self.cooldown
-            .update_cooldown(CooldownType::EmailForgotPassword, Some(user.id))
-            .await
-            .map_err(|e| AuthError::validation(e.message))?;
-
         let _ = self
-            .audit
-            .log_event(
-                AuthEventType::PasswordResetRequest,
-                AuthEventPayload {
-                    user_id: Some(user.id),
-                    email: Some(user.email.clone()),
-                    ..Default::default()
-                },
-            )
+            .cooldown
+            .update_cooldown(CooldownType::EmailResend, Some(user.id))
             .await;
 
         Ok(())
@@ -363,7 +329,7 @@ where
 
         let user = users::Model::find_by_reset_token(db, &payload.token).await?;
 
-        let password_hash = Self::hash_password(payload.password).await?;
+        let password_hash = Self::hash_password(&payload.password).await?;
 
         let mut user_am: users::ActiveModel = user.clone().into();
         user_am.password = Set(Some(password_hash));
@@ -397,60 +363,68 @@ where
             .await?
             .ok_or_else(|| AuthError::unauthorized("Unauthorized"))?;
 
-        // Check cooldown
-        self.cooldown
-            .check_cooldown(CooldownType::Login, Some(user.id))
-            .await
-            .map_err(|e| AuthError::validation(e.message))?;
+        self.gatekeep(CooldownType::Login, Some(user.id)).await?;
 
-        // Check if user has a password (not OAuth-only user)
-        let password_hash_str = user.password.clone().ok_or_else(|| {
+        let hash = user.password.as_deref().ok_or_else(|| {
             AuthError::unauthorized("This account uses OAuth login. Please use OAuth sign-in.")
         })?;
 
-        let pw = payload.password.clone();
-        if let Err(e) = Self::verify_password(pw, password_hash_str.clone()).await {
+        if let Err(e) = Self::verify_password(&payload.password, hash).await {
             let _ = self
                 .cooldown
                 .record_failure(CooldownType::Login, Some(user.id))
                 .await;
-
-            let _ = self
-                .audit
-                .log_event(
-                    AuthEventType::LoginFailed,
-                    AuthEventPayload {
-                        user_id: Some(user.id),
-                        email: Some(user.email.clone()),
-                        ..Default::default()
-                    },
-                )
+            self.log_and_track(AuthEventType::LoginFailed, Some(&user), None)
                 .await;
-
-            self.metrics.record_failed_login();
             return Err(e);
         }
 
         let resp = self.issue_tokens(db, &user).await?;
 
         let _ = self
-            .audit
-            .log_event(
-                AuthEventType::LoginSucceeded,
-                AuthEventPayload {
-                    user_id: Some(user.id),
-                    ..Default::default()
-                },
-            )
+            .cooldown
+            .reset_cooldown(CooldownType::Login, Some(user.id))
+            .await;
+        self.log_and_track(AuthEventType::LoginSucceeded, Some(&user), None)
             .await;
 
-        self.cooldown
-            .reset_cooldown(CooldownType::Login, Some(user.id))
-            .await
-            .map_err(|e| AuthError::validation(e.message))?;
-
-        self.metrics.record_login();
         Ok(resp)
+    }
+
+    pub async fn forgot_password(
+        &self,
+        db: &DatabaseConnection,
+        payload: ForgotPasswordRequest,
+    ) -> Result<(), AuthError> {
+        payload.validate()?;
+
+        let user = match users::Model::find_by_email(db, &payload.email).await? {
+            Some(u) => u,
+            None => return Ok(()),
+        };
+
+        self.gatekeep(CooldownType::EmailForgotPassword, Some(user.id))
+            .await?;
+
+        let reset_token = Uuid::new_v4().to_string();
+        let mut user_am: users::ActiveModel = user.clone().into();
+        user_am.reset_token = Set(Some(reset_token.clone()));
+        user_am.reset_sent_at = Set(Some(Utc::now()));
+        user_am.update(db).await?;
+
+        let reset_url = format!("{}/reset?token={}", self.config.frontend_url(), reset_token);
+        self.email
+            .send_password_reset_email(user.email.clone(), user.name.clone(), reset_url, 24)
+            .await;
+
+        let _ = self
+            .cooldown
+            .update_cooldown(CooldownType::EmailForgotPassword, Some(user.id))
+            .await;
+        self.log_and_track(AuthEventType::PasswordResetRequest, Some(&user), None)
+            .await;
+
+        Ok(())
     }
 
     pub async fn refresh(
@@ -458,44 +432,17 @@ where
         db: &DatabaseConnection,
         refresh_token: String,
     ) -> Result<TokenResponse, AuthError> {
-        let db_token_opt = refresh_tokens::Entity::find_by_id(refresh_token.clone())
+        let db_token = refresh_tokens::Entity::find_by_id(refresh_token)
             .one(db)
-            .await?;
-
-        let db_token = match db_token_opt {
-            Some(t) => t,
-            None => {
-                let _ = self
-                    .audit
-                    .log_event(
-                        AuthEventType::TokenRefreshFailed,
-                        AuthEventPayload {
-                            reason: Some("invalid_refresh_token".to_string()),
-                            ..Default::default()
-                        },
-                    )
-                    .await;
-
-                return Err(AuthError::unauthorized("Invalid refresh token"));
-            }
-        };
+            .await?
+            .ok_or_else(|| AuthError::unauthorized("Invalid refresh token"))?;
 
         if db_token.expires_at < Utc::now().timestamp() {
             let _ = refresh_tokens::Entity::delete_by_id(db_token.token)
                 .exec(db)
                 .await;
-
-            let _ = self
-                .audit
-                .log_event(
-                    AuthEventType::TokenRefreshFailed,
-                    AuthEventPayload {
-                        reason: Some("expired".to_string()),
-                        ..Default::default()
-                    },
-                )
+            self.log_and_track(AuthEventType::TokenRefreshFailed, None, Some("expired"))
                 .await;
-
             return Err(AuthError::unauthorized("Token expired"));
         }
 
@@ -508,22 +455,10 @@ where
         refresh_tokens::Entity::delete_by_id(db_token.token)
             .exec(db)
             .await?;
-
         let resp = self.issue_tokens(db, &user).await?;
 
-        let _ = self
-            .audit
-            .log_event(
-                AuthEventType::TokenRefresh,
-                AuthEventPayload {
-                    user_id: Some(user.id),
-                    email: Some(user.email.clone()),
-                    ..Default::default()
-                },
-            )
+        self.log_and_track(AuthEventType::TokenRefresh, Some(&user), None)
             .await;
-
-        self.metrics.record_token_refresh();
         Ok(resp)
     }
 
@@ -536,22 +471,31 @@ where
         Ok(())
     }
 
-    async fn hash_password(password: String) -> Result<String, AuthError> {
+    // --- HELPERS ---
+
+    async fn hash_password(password: &str) -> Result<String, AuthError> {
         let salt = SaltString::generate(&mut OsRng);
-        let argon2 = Self::argon2();
-        let password_hash = argon2
+        Ok(Argon2::default()
             .hash_password(password.as_bytes(), &salt)?
-            .to_string();
-        Ok(password_hash)
+            .to_string())
     }
 
-    async fn verify_password(password: String, hash: String) -> Result<(), AuthError> {
-        let parsed_hash = PasswordHash::new(&hash)?;
-
-        let argon2 = Self::argon2();
-        argon2
+    async fn verify_password(password: &str, hash: &str) -> Result<(), AuthError> {
+        let parsed_hash = PasswordHash::new(hash)?;
+        Argon2::default()
             .verify_password(password.as_bytes(), &parsed_hash)
             .map_err(|_| AuthError::unauthorized("Invalid password"))
+    }
+
+    fn handle_db_error(e: sea_orm::DbErr) -> AuthError {
+        if let sea_orm::DbErr::Exec(sea_orm::RuntimeErr::SqlxError(sqlx_err)) = &e {
+            if let Some(db_err) = sqlx_err.as_database_error() {
+                if db_err.constraint().map_or(false, |c| c.contains("email")) {
+                    return AuthError::validation("This email is already registered");
+                }
+            }
+        }
+        AuthError::from(e)
     }
 
     pub async fn issue_tokens(

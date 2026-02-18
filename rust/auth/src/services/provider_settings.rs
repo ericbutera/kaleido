@@ -1,9 +1,5 @@
 use crate::error::AuthError;
 use crate::services::oauth_provider_service::OAuthProviderService;
-#[cfg(feature = "aws-secrets")]
-use aws_config;
-#[cfg(feature = "aws-secrets")]
-use aws_sdk_secretsmanager as sm;
 use sea_orm::DatabaseConnection;
 
 /// Known provider identifiers
@@ -60,25 +56,16 @@ pub async fn get_provider_config(
         }
     };
 
-    // 3. Resolve Client Secret (AWS logic)
+    // 3. Resolve Client Secret (Secret Manager)
+    // Attempt to fetch from a secrets manager (GCP by default). If retrieval fails,
+    // fall back to the stored value in the DB.
     let client_secret = if name == PROVIDER_GOOGLE && !m.client_secret.trim().is_empty() {
-        #[cfg(feature = "aws-secrets")]
-        {
-            let aws_conf = aws_config::load_from_env().await;
-            let sm_client = sm::Client::new(&aws_conf);
-
-            sm_client
-                .get_secret_value()
-                .secret_id(m.client_secret.clone())
-                .send()
-                .await
-                .ok()
-                .and_then(|out| out.secret_string)
-                .unwrap_or_else(|| m.client_secret.clone())
-        }
-        #[cfg(not(feature = "aws-secrets"))]
-        {
-            m.client_secret.clone()
+        match crate::secrets_manager::create_secrets_manager(None).await {
+            Ok(sm) => match sm.get_secret(&m.client_secret).await {
+                Ok(s) => s,
+                Err(_) => m.client_secret.clone(),
+            },
+            Err(_) => m.client_secret.clone(),
         }
     } else {
         m.client_secret.clone()

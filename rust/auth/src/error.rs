@@ -1,4 +1,4 @@
-use axum::http::StatusCode;
+use axum::http::{header, StatusCode};
 use axum::response::{IntoResponse, Response};
 use axum::Json;
 use serde::Serialize;
@@ -9,6 +9,17 @@ use std::fmt;
 pub struct AuthError {
     pub code: StatusCode,
     pub message: String,
+    pub retry_after_seconds: Option<i64>,
+}
+
+impl AuthError {
+    pub fn too_many_requests(message: impl Into<String>, retry_after_seconds: Option<i64>) -> Self {
+        Self {
+            code: StatusCode::TOO_MANY_REQUESTS,
+            message: message.into(),
+            retry_after_seconds,
+        }
+    }
 }
 
 impl fmt::Display for AuthError {
@@ -29,6 +40,7 @@ impl AuthError {
         Self {
             code: StatusCode::UNAUTHORIZED,
             message: message.into(),
+            retry_after_seconds: None,
         }
     }
 
@@ -36,6 +48,7 @@ impl AuthError {
         Self {
             code: StatusCode::FORBIDDEN,
             message: message.into(),
+            retry_after_seconds: None,
         }
     }
 
@@ -43,6 +56,7 @@ impl AuthError {
         Self {
             code: StatusCode::UNPROCESSABLE_ENTITY,
             message: message.into(),
+            retry_after_seconds: None,
         }
     }
 
@@ -50,6 +64,7 @@ impl AuthError {
         Self {
             code: StatusCode::INTERNAL_SERVER_ERROR,
             message: message.into(),
+            retry_after_seconds: None,
         }
     }
 
@@ -57,6 +72,7 @@ impl AuthError {
         Self {
             code: StatusCode::NOT_FOUND,
             message: message.into(),
+            retry_after_seconds: None,
         }
     }
 }
@@ -66,7 +82,15 @@ impl IntoResponse for AuthError {
         let body = Json(ErrorResponse {
             error: self.message,
         });
-        (self.code, body).into_response()
+        if let Some(secs) = self.retry_after_seconds {
+            let mut res = (self.code, body).into_response();
+            if let Ok(hv) = header::HeaderValue::from_str(&secs.to_string()) {
+                res.headers_mut().insert(header::RETRY_AFTER, hv);
+            }
+            res
+        } else {
+            (self.code, body).into_response()
+        }
     }
 }
 

@@ -1,10 +1,7 @@
 use crate::entities::oauth_providers;
 use crate::error::AuthError;
 use crate::services::provider_settings;
-#[cfg(feature = "aws-secrets")]
-use aws_config;
-#[cfg(feature = "aws-secrets")]
-use aws_sdk_secretsmanager as sm;
+use crate::secrets_manager;
 use chrono::Utc;
 use sea_orm::{ActiveModelTrait, ColumnTrait, DatabaseConnection, EntityTrait, QueryFilter, Set};
 
@@ -27,7 +24,9 @@ impl OAuthProviderService {
             oauth_providers::Entity::delete_by_id(existing.id)
                 .exec(db)
                 .await
-                .map_err(|e| AuthError::internal_error(format!("Failed to delete provider: {}", e)))?;
+                .map_err(|e| {
+                    AuthError::internal_error(format!("Failed to delete provider: {}", e))
+                })?;
             return Ok(());
         }
 
@@ -70,17 +69,17 @@ impl OAuthProviderService {
                 (auth_url, token_url, userinfo_url)
             };
 
-        // create AWS SM client
-        let aws_conf = aws_config::load_from_env().await;
-        let sm_client = sm::Client::new(&aws_conf);
+        // TODO: abstract provider specific logic (like Google overrides) into separate module/layer so this upsert fn is more generic and reusable for other provider types in the future
+        // Create a secrets manager (GCP-backed by default). If none is available an error is returned.
+        let sm_client = secrets_manager::create_secrets_manager(None).await?;
 
         if let Some(existing) = Self::get_by_provider(db, provider).await? {
             // UPDATE path: existing record already has an ID
             let record_id = existing.id;
             let secret_name = format!("mycorner/oauth/{}/{}", provider, record_id);
 
-            // Store/update secret in AWS Secrets Manager
-            Self::create_or_update_secret(&sm_client, &secret_name, client_secret).await?;
+            // Store/update secret in Secrets Manager
+            sm_client.put_secret(&secret_name, client_secret).await?;
 
             // Update DB record with all fields and secret name
             let mut am: oauth_providers::ActiveModel = existing.clone().into();
@@ -120,8 +119,7 @@ impl OAuthProviderService {
         let secret_name = format!("mycorner/oauth/{}/{}", provider, record_id);
 
         // Create secret in Secrets Manager with unique ID-based name
-        if let Err(e) = Self::create_or_update_secret(&sm_client, &secret_name, client_secret).await
-        {
+        if let Err(e) = sm_client.put_secret(&secret_name, client_secret).await {
             // Cleanup: delete the DB record we just created since secret creation failed
             let _ = oauth_providers::Entity::delete_by_id(record_id)
                 .exec(db)
@@ -133,78 +131,11 @@ impl OAuthProviderService {
         let mut am: oauth_providers::ActiveModel = inserted.into();
         am.client_secret = Set(secret_name);
         let final_record = am.update(db).await.map_err(|e| {
-            AuthError::internal_error(format!(
-                "Failed to update provider with secret name: {}",
-                e
-            ))
+            AuthError::internal_error(format!("Failed to update provider with secret name: {}", e))
         })?;
 
         Ok(final_record)
     }
-
-    /// Helper to create or update a secret in AWS Secrets Manager
-    async fn create_or_update_secret(
-        sm_client: &sm::Client,
-        secret_name: &str,
-        secret_value: &str,
-    ) -> Result<(), AuthError> {
-        // TODO: extract create & update fns
-
-        // Try to update existing secret first. If it doesn't exist, create it.
-        let put_res = sm_client
-            .put_secret_value()
-            .secret_id(secret_name)
-            .secret_string(secret_value)
-            .send()
-            .await;
-
-        match put_res {
-            Ok(_) => return Ok(()),
-            Err(put_err) => {
-                // If the secret wasn't found, attempt to create it. Otherwise return error.
-                let put_err_str = format!("{:?}", put_err);
-                if put_err_str.contains("ResourceNotFoundException") {
-                    let create_res = sm_client
-                        .create_secret()
-                        .name(secret_name)
-                        .secret_string(secret_value)
-                        .send()
-                        .await;
-
-                    match create_res {
-                        Ok(_) => return Ok(()),
-                        Err(create_err) => {
-                            // If create failed because secret already exists (race), try put again.
-                            let create_err_str = format!("{:?}", create_err);
-                            if create_err_str.contains("ResourceExistsException") {
-                                sm_client
-                                    .put_secret_value()
-                                    .secret_id(secret_name)
-                                    .secret_string(secret_value)
-                                    .send()
-                                    .await
-                                    .map_err(|e| {
-                                        AuthError::internal_error(format!(
-                                            "Failed to update secret in Secrets Manager after race: {}",
-                                            e
-                                        ))
-                                    })?;
-                                return Ok(());
-                            }
-
-                            return Err(AuthError::internal_error(format!(
-                                "Failed to create secret in Secrets Manager: {}",
-                                create_err
-                            )));
-                        }
-                    }
-                }
-
-                return Err(AuthError::internal_error(format!(
-                    "Failed to update secret in Secrets Manager: {}",
-                    put_err
-                )));
-            }
-        }
-    }
 }
+
+// Secrets manager helper removed; using cloud-agnostic `secrets_manager` instead.

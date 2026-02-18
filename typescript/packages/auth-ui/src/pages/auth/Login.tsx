@@ -37,11 +37,20 @@ export default function Login() {
       await login.mutateAsync(data, setError);
       navigate("/");
     } catch (err: any) {
-      if (err?.response?.status == 401) {
+      const status = err?.response?.status;
+      if (status == 401) {
         setError("root", {
           type: "server",
           message: "Invalid email or password",
         });
+      } else if (status == 422) {
+        // Rate-limit or validation errors may be returned as 422 by the API.
+        // Show the API-provided message when available.
+        const body = err?.response?.data;
+        const msg =
+          (body && (body.error || body.message)) ||
+          "Too many login attempts. Please try again later.";
+        setError("root", { type: "server", message: msg });
       } else {
         const apiErr = err?.response?.data ?? err;
         handleFormError(apiErr, setError, "Failed to sign in");

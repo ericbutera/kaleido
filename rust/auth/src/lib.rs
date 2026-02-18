@@ -14,6 +14,7 @@ pub mod cookies;
 pub mod entities;
 pub mod error;
 pub mod extractors;
+pub mod secrets_manager;
 pub mod services;
 pub mod tokens;
 pub mod traits;

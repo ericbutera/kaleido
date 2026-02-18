@@ -47,8 +47,7 @@ reqwest = { workspace = true }
 oauth2 = { workspace = true }
 
 # AWS for secrets management (optional)
-aws-config = { workspace = true, optional = true }
-aws-sdk-secretsmanager = { workspace = true, optional = true }
+# removed: aws-config and aws-sdk-secretsmanager (no longer used)
 
 # URL parsing
 url = { workspace = true }
@@ -56,8 +55,16 @@ url = { workspace = true }
 # HTTP
 http = { workspace = true }
 
+# GCP auth helper (optional)
+gcp_auth = { version = "0.12", optional = true }
+base64 = "0.21"
+google-secretmanager1 = { version = "*", optional = true }
+yup-oauth2 = { version = "7", optional = true }
+hyper-util = { version = "0.1", optional = true }
+hyper-rustls = { version = "0.23", optional = true }
+
 [features]
 default = []
-aws-secrets = ["aws-config", "aws-sdk-secretsmanager"]
+gcp-secrets = ["gcp_auth", "google-secretmanager1", "yup-oauth2", "hyper-util", "hyper-rustls"]
 
 [dev-dependencies]

@@ -19,7 +19,8 @@ pub mod memory;
 #[cfg(feature = "durable")]
 pub mod durable;
 
-// Re-exports
+// Re-exports (only when durable storage is enabled)
+#[cfg(feature = "durable")]
 pub use entities::background_tasks;
 pub use error::TaskError;
 pub use memory::InMemoryStorage;
