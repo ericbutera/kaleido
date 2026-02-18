@@ -1,8 +1,4 @@
-import {
-  faEnvelope,
-  faLock,
-  faRightToBracket,
-} from "@fortawesome/free-solid-svg-icons";
+import { faRightToBracket } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { useEffect } from "react";
 import { useForm } from "react-hook-form";
