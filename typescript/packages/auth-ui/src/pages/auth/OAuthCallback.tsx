@@ -1,8 +1,8 @@
-import Layout from "@/components/auth/Layout";
 import { faSpinner } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import Layout from "../../components/auth/Layout";
 import { useAuthApi } from "../../lib/AuthContext";
 
 export default function OAuthCallback() {

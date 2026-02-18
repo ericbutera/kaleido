@@ -63,56 +63,55 @@ export default function Login() {
           />
         </div>
         <h2 className="text-3xl font-bold mb-2">Welcome Back</h2>
-        <p className="text-neutral-content-600">Sign in to your account</p>
       </div>
 
-      <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+      <form onSubmit={handleSubmit(onSubmit)}>
         {errors.root && (
-          <div className="alert alert-error alert-soft">
+          <div className="alert alert-error alert-soft mb-4">
             <span>{errors.root.message}</span>
           </div>
         )}
 
-        <label className="floating-label w-full">
-          <span>
-            <FontAwesomeIcon icon={faEnvelope} />
-            hi Email
-          </span>
+        <fieldset className="fieldset">
+          <label className="label" htmlFor="login-email">
+            <span className="label-text">Email</span>
+          </label>
           <input
+            id="login-email"
             type="email"
-            className="input w-full"
             placeholder="email@example.com"
+            className={`input input-bordered w-full ${errors.email ? "input-error" : ""}`}
             {...register("email", { required: "Email is required" })}
           />
-        </label>
-        {errors.email && (
-          <span className="text-error text-sm">{errors.email.message}</span>
-        )}
+          {errors.email && (
+            <span className="text-error text-sm">{errors.email.message}</span>
+          )}
 
-        <label className="floating-label w-full">
-          <span>
-            <FontAwesomeIcon icon={faLock} />
-            Password
-          </span>
+          <label className="label mt-4" htmlFor="login-password">
+            <span className="label-text">Password</span>
+          </label>
           <input
+            id="login-password"
             type="password"
             placeholder="••••••••"
-            className="input w-full"
+            className={`input input-bordered w-full ${errors.password ? "input-error" : ""}`}
             minLength={6}
             {...register("password", { required: "Password is required" })}
           />
-        </label>
-        {errors.password && (
-          <span className="text-error text-sm">{errors.password.message}</span>
-        )}
+          {errors.password && (
+            <span className="text-error text-sm">
+              {errors.password.message}
+            </span>
+          )}
 
-        <button
-          type="submit"
-          className="btn btn-primary w-full "
-          disabled={isSubmitting}
-        >
-          {isSubmitting ? "Signing in" : "Sign In"}
-        </button>
+          <button
+            type="submit"
+            className="btn btn-primary w-full mt-4"
+            disabled={isSubmitting}
+          >
+            {isSubmitting ? "Signing in" : "Sign In"}
+          </button>
+        </fieldset>
       </form>
 
       {oauthEnabled && OAuthButton && (
