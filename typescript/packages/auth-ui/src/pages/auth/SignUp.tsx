@@ -1,8 +1,10 @@
+import { faUserPlus } from "@fortawesome/free-solid-svg-icons";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { Link, useNavigate } from "react-router-dom";
 import Layout from "../../components/auth/Layout";
-import { useAuthApi } from "../../lib/AuthContext";
+import { useAuthApi, useAuthConfig } from "../../lib/AuthContext";
 import { handleFormError } from "../../lib/form";
 import type { RegisterRequest } from "../../lib/types";
 
@@ -24,6 +26,7 @@ export default function SignUp() {
 
   const navigate = useNavigate();
   const { useRegisterUser } = useAuthApi();
+  const { oauthEnabled, registrationEnabled, OAuthButton } = useAuthConfig();
   const registerUser = useRegisterUser();
 
   // Non-field errors should show in a polished alert on the page
@@ -60,7 +63,7 @@ export default function SignUp() {
   return (
     <Layout>
       <h2 className="card-title text-2xl mb-4">
-        <FontAwesomeIcon icon={faStore} className="text-primary mr-2" />
+        <FontAwesomeIcon icon={faUserPlus} className="text-primary mr-2" />
         Sign Up
       </h2>
       {pageError && (
@@ -164,10 +167,10 @@ export default function SignUp() {
         </fieldset>
       </form>
 
-      {oauthEnabled && (
+      {oauthEnabled && OAuthButton && (
         <>
           <div className="divider">OR</div>
-          <GoogleOAuthButton text="Sign up with Google" />
+          <OAuthButton text="Sign up with Google" />
         </>
       )}
 

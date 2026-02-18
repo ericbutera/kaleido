@@ -4,7 +4,7 @@ import { useForm } from "react-hook-form";
 import toast from "react-hot-toast";
 import { useLocation, useNavigate } from "react-router-dom";
 import Layout from "../../components/auth/Layout";
-import { useResendConfirmationEmail } from "../../lib/queries";
+import { useAuthApi } from "../../lib/AuthContext";
 
 export default function ResendConfirmation() {
   const location = useLocation();

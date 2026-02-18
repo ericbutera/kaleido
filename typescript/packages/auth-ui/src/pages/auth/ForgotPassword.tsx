@@ -9,6 +9,7 @@ import { handleFormError } from "../../lib/form";
 
 export default function ForgotPassword() {
   const [success, setSuccess] = useState<string | null>(null);
+  const { useForgotPassword } = useAuthApi();
   const forgot = useForgotPassword();
 
   const {

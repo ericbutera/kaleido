@@ -16,10 +16,11 @@
         "README.md"
     ],
     "scripts": {
-        "build": "npx tsc && npx vite build",
+        "build": "npx vite build",
         "dev": "npx vite build --watch",
         "lint": "eslint src",
-        "clean": "rm -rf dist"
+        "clean": "rm -rf dist",
+        "typecheck": "npx tsc --noEmit"
     },
     "peerDependencies": {
         "react": "^18.0.0 || ^19.0.0",
@@ -49,19 +50,12 @@
         "vite": "^7.2.4",
         "vite-plugin-dts": "^4.3.0"
     },
-    "keywords": [
-        "react",
-        "auth",
-        "authentication",
-        "ui-components",
-        "login",
-        "signup"
-    ],
-    "author": "Your Name",
+    "keywords": [],
+    "author": "Eric Butera",
     "license": "MIT",
     "repository": {
         "type": "git",
-        "url": "https://github.com/yourusername/kaleido",
+        "url": "https://github.com/ericbutera/kaleido",
         "directory": "typescript/packages/auth-ui"
     }
 }

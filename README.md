@@ -2,21 +2,6 @@
 
 A multi-language monorepo for shared components across SaaS applications.
 
-## Structure
-
-```
-kaleido/
-├── rust/               # Rust crates
-│   ├── auth/           # Authentication & authorization
-│   ├── background_jobs/ # Background job processing
-│   └── Cargo.toml      # Rust workspace
-├── typescript/         # TypeScript/npm packages
-│   ├── auth-ui/        # React auth components
-│   └── package.json    # npm workspace
-├── go/                 # Go modules (future)
-└── README.md
-```
-
 ## Language-Specific Workspaces
 
 ### Rust Workspace

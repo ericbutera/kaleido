@@ -3,7 +3,7 @@ import { faSpinner } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { useTokenRefresh } from "../../lib/queries";
+import { useAuthApi } from "../../lib/AuthContext";
 
 export default function OAuthCallback() {
   // TODO: signup-layout (small card centered on page)
@@ -11,12 +11,20 @@ export default function OAuthCallback() {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(true);
 
-  const refresh = useTokenRefresh();
+  const { useTokenRefresh } = useAuthApi();
+  const refresh = useTokenRefresh?.();
 
   useEffect(() => {
     // After backend redirects here, the refresh token is stored as an HttpOnly cookie.
     // Call the refresh endpoint (no body) to obtain a fresh access token and then populate app state.
     const handleCallback = async () => {
+      if (!refresh) {
+        setError("OAuth token refresh is not configured");
+        setLoading(false);
+        setTimeout(() => navigate("/login"), 3000);
+        return;
+      }
+
       try {
         // TODO: i believe this is broken after the react query refactor, needs retesting
         await refresh.mutateAsync();
@@ -25,7 +33,7 @@ export default function OAuthCallback() {
         setError(
           err instanceof Error
             ? err.message
-            : "Failed to complete authentication"
+            : "Failed to complete authentication",
         );
         setLoading(false);
         setTimeout(() => navigate("/login"), 3000);

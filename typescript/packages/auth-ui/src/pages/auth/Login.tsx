@@ -1,11 +1,16 @@
-import { faEnvelope, faLock } from "@fortawesome/free-solid-svg-icons";
+import {
+  faEnvelope,
+  faLock,
+  faRightToBracket,
+} from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { useEffect } from "react";
 import { useForm } from "react-hook-form";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import Layout from "../../components/auth/Layout";
-import { useAuthApi } from "../../lib/AuthContext";
+import { useAuthApi, useAuthConfig } from "../../lib/AuthContext";
 import { handleFormError } from "../../lib/form";
+import { redirectToOrigin } from "../../lib/utils";
 
 export default function Login() {
   // TODO: signup-layout (small card centered on page)
@@ -19,10 +24,12 @@ export default function Login() {
     defaultValues: { email: "", password: "" },
   });
   const navigate = useNavigate();
+  const location = useLocation();
   const { useLoginUser, useCurrentUser } = useAuthApi();
+  const { oauthEnabled, registrationEnabled, OAuthButton } = useAuthConfig();
   const login = useLoginUser();
   const { user } = useCurrentUser();
-  // If already signed in, redirect back to the page that initiated login (if any)
+
   useEffect(() => {
     if (user) {
       redirectToOrigin(navigate, location);
@@ -50,12 +57,13 @@ export default function Login() {
     <Layout>
       <div className="text-center mb-6">
         <div className="inline-flex items-center justify-center w-16 h-16 bg-primary/10 rounded-full mb-4">
-          <FontAwesomeIcon icon={faStore} className="text-3xl text-primary" />
+          <FontAwesomeIcon
+            icon={faRightToBracket}
+            className="text-3xl text-primary"
+          />
         </div>
         <h2 className="text-3xl font-bold mb-2">Welcome Back</h2>
-        <p className="text-neutral-content-600">
-          Sign in to manage your corner store
-        </p>
+        <p className="text-neutral-content-600">Sign in to your account</p>
       </div>
 
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
@@ -68,7 +76,7 @@ export default function Login() {
         <label className="floating-label w-full">
           <span>
             <FontAwesomeIcon icon={faEnvelope} />
-            Email
+            hi Email
           </span>
           <input
             type="email"
@@ -107,7 +115,9 @@ export default function Login() {
         </button>
       </form>
 
-      {oauthEnabled && <GoogleOAuthButton text="Sign in with Google" />}
+      {oauthEnabled && OAuthButton && (
+        <OAuthButton text="Sign in with Google" />
+      )}
 
       <div className="divider" />
 

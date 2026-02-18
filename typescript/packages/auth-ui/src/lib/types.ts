@@ -39,6 +39,32 @@ export interface ApiError {
 }
 
 // ============================================================================
+// Auth Configuration
+// ============================================================================
+
+/**
+ * Optional configuration for auth UI features
+ */
+export interface AuthConfig {
+  /**
+   * Whether OAuth authentication is enabled (e.g., Google Sign-In)
+   * @default false
+   */
+  oauthEnabled?: boolean;
+
+  /**
+   * Whether new user registration is enabled
+   * @default true
+   */
+  registrationEnabled?: boolean;
+
+  /**
+   * Custom OAuth button component (e.g., for Google Sign-In)
+   */
+  OAuthButton?: React.ComponentType<{ text: string }>;
+}
+
+// ============================================================================
 // Auth API Client Interface
 // ============================================================================
 
@@ -127,6 +153,14 @@ export interface AuthApiClient {
    * Logout mutation hook
    */
   useLogout(): {
+    mutateAsync: () => Promise<void>;
+    isPending: boolean;
+  };
+
+  /**
+   * OAuth token refresh hook (optional - only needed if using OAuth)
+   */
+  useTokenRefresh?(): {
     mutateAsync: () => Promise<void>;
     isPending: boolean;
   };

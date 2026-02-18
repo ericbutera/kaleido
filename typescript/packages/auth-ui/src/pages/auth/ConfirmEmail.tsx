@@ -1,7 +1,7 @@
 import { faEnvelope } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { Link, useLocation } from "react-router-dom";
-import Layout from "../../components/auth/Layout";
+import { default as Layout } from "../../components/auth/Layout";
 
 export default function ConfirmEmail() {
   const location = useLocation();
