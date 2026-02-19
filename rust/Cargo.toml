@@ -4,6 +4,7 @@ resolver = "2"
 members = [
     "auth",
     "background_jobs",
+    "kaleido_migrations",
 ]
 
 [workspace.package]
