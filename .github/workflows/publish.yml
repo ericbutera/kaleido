@@ -1,4 +1,4 @@
-name: Publish @ericbutera/kaleido
+name: Publish Package
 
 on:
   push:
@@ -14,23 +14,25 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-        with:
-          persist-credentials: true
 
       - uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: '24'
           registry-url: 'https://registry.npmjs.org'
 
       - name: Install dependencies
         run: npm ci
-        working-directory: typescript
+        working-directory: typescript/packages/kaleido
 
       - name: Build package
-        run: npm run --workspace=@ericbutera/kaleido build
-        working-directory: typescript
+        run: npm run build --if-present
+        working-directory: typescript/packages/kaleido
+
+      - name: Test
+        run: npm test
+        working-directory: typescript/packages/kaleido
 
       - name: Publish to npm
-        run: npm publish --access public
+        run: npm publish
         working-directory: typescript/packages/kaleido
 
