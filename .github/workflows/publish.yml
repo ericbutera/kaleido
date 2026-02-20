@@ -33,6 +33,6 @@ jobs:
         working-directory: typescript/packages/kaleido
 
       - name: Publish to npm
-        run: npm publish
+        run: npm publish --workspace=@ericbutera/kaleido --access public
         working-directory: typescript/packages/kaleido
 
