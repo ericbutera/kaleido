@@ -1,12 +1,12 @@
+import Layout from "@/auth/components/auth/Layout";
+import { useAuthApi, useAuthConfig } from "@/auth/lib/AuthContext";
+import { handleFormError } from "@/auth/lib/form";
+import { redirectToOrigin } from "@/auth/lib/utils";
 import { faRightToBracket } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { Link, useLocation, useNavigate } from "react-router-dom";
-import Layout from "../../components/auth/Layout";
-import { useAuthApi, useAuthConfig } from "../../lib/AuthContext";
-import { handleFormError } from "../../lib/form";
-import { redirectToOrigin } from "../../lib/utils";
 
 export default function Login() {
   const {

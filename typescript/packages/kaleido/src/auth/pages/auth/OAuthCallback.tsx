@@ -1,6 +1,6 @@
+import { useAuthApi } from "@/auth/lib/AuthContext";
 import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { useAuthApi } from "../../lib/AuthContext";
 
 export default function OAuthCallback() {
   const navigate = useNavigate();

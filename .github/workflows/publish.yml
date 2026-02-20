@@ -1,9 +1,9 @@
-name: Auto Publish @ericbutera/kaleido
+name: Publish Package
 
 on:
   push:
-    branches:
-      - main
+    tags:
+      - 'v*'
 
 permissions:
   id-token: write
@@ -14,34 +14,25 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-        with:
-          persist-credentials: true
 
       - uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: '24'
           registry-url: 'https://registry.npmjs.org'
 
       - name: Install dependencies
         run: npm ci
-        working-directory: typescript
+        working-directory: typescript/packages/kaleido
 
       - name: Build package
-        run: npm run --workspace=@ericbutera/kaleido build
-        working-directory: typescript
+        run: npm run build --if-present
+        working-directory: typescript/packages/kaleido
 
-      - name: Bump patch version
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          cd typescript/packages/kaleido
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          npm version patch -m "chore(release): %s [skip ci]"
-          git push origin HEAD --follow-tags
-
+      # - name: Test
+      #   run: npm test
+      #   working-directory: typescript/packages/kaleido
 
       - name: Publish to npm
         run: npm publish --workspace=@ericbutera/kaleido --access public
-        working-directory: typescript
+        working-directory: typescript/packages/kaleido
 

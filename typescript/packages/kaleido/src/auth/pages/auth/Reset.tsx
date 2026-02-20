@@ -1,7 +1,7 @@
+import Layout from "@/auth/components/auth/Layout";
+import { useAuthApi } from "@/auth/lib/AuthContext";
 import { useForm } from "react-hook-form";
 import { useNavigate, useSearchParams } from "react-router-dom";
-import Layout from "../../components/auth/Layout";
-import { useAuthApi } from "../../lib/AuthContext";
 
 export default function Reset() {
   const { register, handleSubmit } = useForm<{

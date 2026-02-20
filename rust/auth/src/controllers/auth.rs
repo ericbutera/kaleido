@@ -104,7 +104,8 @@ where
     responses(
         (status = 200, description = "Login successful"),
         (status = 401, description = "Invalid credentials"),
-        (status = 422, description = "Validation error")
+        (status = 422, description = "Validation error"),
+        (status = 429, description = "Too many login attempts"),
     ),
     tag = "auth"
 )]

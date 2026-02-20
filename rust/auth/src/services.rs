@@ -28,6 +28,42 @@ use utoipa::ToSchema;
 use uuid::Uuid;
 use validator::Validate;
 
+// Helper trait to map database errors into `AuthError` with friendly messages
+// for known constraint violations. This mirrors the previous `map_db_error`
+// helper used in the project to keep call sites concise.
+trait ResultExt<T> {
+    fn map_db_error(
+        self,
+        field: &str,
+        constraint: &str,
+        friendly_msg: &str,
+    ) -> Result<T, AuthError>;
+}
+
+impl<T> ResultExt<T> for Result<T, sea_orm::DbErr> {
+    fn map_db_error(
+        self,
+        _field: &str,
+        constraint: &str,
+        friendly_msg: &str,
+    ) -> Result<T, AuthError> {
+        match self {
+            Ok(v) => Ok(v),
+            Err(e) => {
+                // Prefer the cleaner behavior used previously: if the DB error
+                // message contains the constraint name, map it to a conflict
+                // (HTTP 409) with a friendly message. Otherwise return the
+                // mapped AuthError from the DbErr.
+                let s = e.to_string().to_lowercase();
+                if s.contains(&constraint.to_lowercase()) {
+                    return Err(AuthError::conflict(friendly_msg.to_string()));
+                }
+                Err(AuthError::from(e))
+            }
+        }
+    }
+}
+
 pub struct RefreshToken {
     pub token: String,
     pub expires_at: i64,
@@ -232,7 +268,11 @@ where
         let name = payload.name.clone();
 
         let am = payload.into_active_model(password_hash);
-        let res = am.insert(db).await.map_err(Self::handle_db_error)?;
+        let res = am.insert(db).await.map_db_error(
+            "email",
+            "users_email_key",
+            "This email is already registered",
+        )?;
 
         let verification_url = format!(
             "{}/verify?token={}",
@@ -297,7 +337,8 @@ where
         }
 
         // Check cooldown
-        self.gatekeep(CooldownType::EmailResend, Some(user.id)).await?;
+        self.gatekeep(CooldownType::EmailResend, Some(user.id))
+            .await?;
 
         let new_token = Uuid::new_v4().to_string();
 
@@ -485,17 +526,6 @@ where
         Argon2::default()
             .verify_password(password.as_bytes(), &parsed_hash)
             .map_err(|_| AuthError::unauthorized("Invalid password"))
-    }
-
-    fn handle_db_error(e: sea_orm::DbErr) -> AuthError {
-        if let sea_orm::DbErr::Exec(sea_orm::RuntimeErr::SqlxError(sqlx_err)) = &e {
-            if let Some(db_err) = sqlx_err.as_database_error() {
-                if db_err.constraint().map_or(false, |c| c.contains("email")) {
-                    return AuthError::validation("This email is already registered");
-                }
-            }
-        }
-        AuthError::from(e)
     }
 
     pub async fn issue_tokens(

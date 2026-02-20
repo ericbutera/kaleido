@@ -1,6 +1,6 @@
+import Layout from "@/auth/components/auth/Layout";
+import { useAuthApi } from "@/auth/lib/AuthContext";
 import { useForm } from "react-hook-form";
-import Layout from "../../components/auth/Layout";
-import { useAuthApi } from "../../lib/AuthContext";
 
 export default function ForgotPassword() {
   const { register, handleSubmit } = useForm<{ email: string }>({

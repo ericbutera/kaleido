@@ -1,9 +1,9 @@
-import { displayLocalDateTime } from "../../lib/date";
-import type { components } from "../../lib/openapi/react-query/api";
-import { useAdminTask } from "../../lib/queries";
+import { displayLocalDateTime } from "@/lib/date";
+import type { components } from "@/lib/openapi/react-query/api";
+import { useAdminTask } from "@/lib/queries";
 
 interface ModalProps {
-  selectedTask: components["schemas"]["AdminTaskResponse"] | null;
+  selectedTask: components["schemas"]["AdminTaskResponse"] | null; // TODO: fix type
   setSelectedTask: (
     task: components["schemas"]["AdminTaskResponse"] | null,
   ) => void;
