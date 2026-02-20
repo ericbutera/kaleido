@@ -1,0 +1,30 @@
+name: Publish @kaleido/kaleido
+
+on:
+  push:
+    tags:
+      - "kaleido-v*"
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: typescript
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          registry-url: "https://registry.npmjs.org"
+
+      - run: npm install
+
+      - name: Build package
+        run: npm run --workspace=@kaleido/kaleido build
+
+      - name: Publish to npm
+        run: npm publish --workspace=@kaleido/kaleido --access public
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
