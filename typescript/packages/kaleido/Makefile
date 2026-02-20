@@ -11,13 +11,19 @@ build:
 	npm run build
 
 publish-patch:
-	npm version patch
+	@echo "Bumping patch version..."
+	npm version patch -m "chore(release): %s"
+	@echo "Pushing to remote..."
 	git push --follow-tags
 
 publish-minor:
-	npm version minor
+	@echo "Bumping minor version..."
+	npm version minor -m "chore(release): %s"
+	@echo "Pushing to remote..."
 	git push --follow-tags
 
 publish-major:
-	npm version major
+	@echo "Bumping major version..."
+	npm version major -m "chore(release): %s"
+	@echo "Pushing to remote..."
 	git push --follow-tags
