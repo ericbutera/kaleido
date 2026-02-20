@@ -23,7 +23,12 @@ export default defineConfig({
         "react",
         "react-dom",
         "react-router-dom",
+        "react-hook-form",
+        "react-hot-toast",
         "@tanstack/react-query",
+        "@fortawesome/fontawesome-svg-core",
+        "@fortawesome/free-solid-svg-icons",
+        "@fortawesome/react-fontawesome",
       ],
       output: {
         globals: {
