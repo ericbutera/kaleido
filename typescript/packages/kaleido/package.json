@@ -1,5 +1,5 @@
 {
-    "name": "@kaleido/kaleido",
+    "name": "@ericbutera/kaleido",
     "version": "0.1.0",
     "description": "Shared UI components and framework utilities for Kaleido",
     "type": "module",
