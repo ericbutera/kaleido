@@ -1,8 +1,8 @@
+import AdminLayout from "@/auth/components/admin/AdminLayout";
+import List from "@/auth/components/admin/tasks/List";
+import Modal from "@/auth/components/admin/tasks/Modal";
+import type { components } from "@/auth/lib/openapi/react-query/api";
 import { useState } from "react";
-import AdminLayout from "../../components/admin/AdminLayout";
-import List from "../../components/admin/tasks/List";
-import Modal from "../../components/admin/tasks/Modal";
-import type { components } from "../../lib/openapi/react-query/api";
 
 export default function Tasks() {
   type Task = components["schemas"]["AdminTaskResponse"];
