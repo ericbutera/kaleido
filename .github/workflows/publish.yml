@@ -42,6 +42,6 @@ jobs:
 
 
       - name: Publish to npm
-        run: npm publish --workspace=@ericbutera/kaleido --access public --provenance
-        working-directory: typescript
+        run: npm publish --access public --provenance
+        working-directory: typescript/packages/kaleido
 
