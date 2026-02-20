@@ -10,8 +10,6 @@ help:
 build:
 	npm run build
 
-
-
 publish-patch:
 	@if [ -n "$(shell git status --porcelain)" ]; then \
 		echo "Working tree is dirty. Commit or stash changes before releasing." >&2; \
