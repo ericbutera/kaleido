@@ -9,7 +9,7 @@ export default defineConfig({
       "@": resolve(__dirname, "src"),
     },
   },
-  plugins: [react(), dts({ insertTypesEntry: true })],
+  plugins: [react(), dts({ insertTypesEntry: true, skipDiagnostics: true })],
   build: {
     lib: {
       entry: resolve(__dirname, "src/index.ts"),
