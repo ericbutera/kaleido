@@ -10,20 +10,36 @@ help:
 build:
 	npm run build
 
+
+
 publish-patch:
+	@if [ -n "$(shell git status --porcelain)" ]; then \
+		echo "Working tree is dirty. Commit or stash changes before releasing." >&2; \
+		exit 1; \
+	fi
 	@echo "Bumping patch version..."
-	npm version patch -m "chore(release): %s"
-	@echo "Pushing to remote..."
-	git push --follow-tags
+	@npm version patch -m "chore(release): %s"
+	@echo "Pushing to remote with tags..."
+	@git push --follow-tags
 
 publish-minor:
+	@if [ -n "$(shell git status --porcelain)" ]; then \
+		echo "Working tree is dirty. Commit or stash changes before releasing." >&2; \
+		exit 1; \
+	fi
 	@echo "Bumping minor version..."
-	npm version minor -m "chore(release): %s"
-	@echo "Pushing to remote..."
-	git push --follow-tags
+	@npm version minor -m "chore(release): %s"
+	@echo "Pushing to remote with tags..."
+	@git push --follow-tags
 
 publish-major:
+	@if [ -n "$(shell git status --porcelain)" ]; then \
+		echo "Working tree is dirty. Commit or stash changes before releasing." >&2; \
+		exit 1; \
+	fi
 	@echo "Bumping major version..."
-	npm version major -m "chore(release): %s"
-	@echo "Pushing to remote..."
-	git push --follow-tags
+	@npm version major -m "chore(release): %s"
+	@echo "Pushing to remote with tags..."
+	@git push --follow-tags
+
+
