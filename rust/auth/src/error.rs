@@ -60,6 +60,14 @@ impl AuthError {
         }
     }
 
+    pub fn conflict(message: impl Into<String>) -> Self {
+        Self {
+            code: StatusCode::CONFLICT,
+            message: message.into(),
+            retry_after_seconds: None,
+        }
+    }
+
     pub fn internal_error(message: impl Into<String>) -> Self {
         Self {
             code: StatusCode::INTERNAL_SERVER_ERROR,

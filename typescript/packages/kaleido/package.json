@@ -34,6 +34,7 @@
         "react-router-dom": "^6.0.0 || ^7.0.0"
     },
     "dependencies": {
+        "@fortawesome/free-brands-svg-icons": "^7.2.0",
         "@types/lodash-es": "^4.17.12",
         "lodash-es": "^4.17.23",
         "qrcode.react": "^4.2.0",
