@@ -1,13 +1,13 @@
-name: Auto Publish @ericbutera/kaleido
+name: Publish @ericbutera/kaleido
 
 on:
   push:
-    branches:
-      - main
+    tags:
+      - 'v*'
 
 permissions:
   id-token: write
-  contents: write
+  contents: read
 
 jobs:
   publish:
@@ -29,17 +29,6 @@ jobs:
       - name: Build package
         run: npm run --workspace=@ericbutera/kaleido build
         working-directory: typescript
-
-      - name: Bump patch version
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          cd typescript/packages/kaleido
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          npm version patch -m "chore(release): %s [skip ci]"
-          git push origin HEAD --follow-tags
-
 
       - name: Publish to npm
         run: npm publish --access public
