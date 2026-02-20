@@ -1,1 +1,1 @@
-export { default } from "@/components/tasks/Modal";
+export { default } from "../../tasks/Modal";

@@ -1,10 +1,10 @@
-import Pagination from "@/components/common/Pagination";
-import type { PaginatedQueryResult } from "@/lib/paginatedQuery";
-import { parseParams, toSearchParams } from "@/lib/params/paramsUtils";
 import { debounce } from "lodash-es";
 import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { useSearchParams } from "react-router-dom";
 import type { ZodTypeAny } from "zod";
+import type { PaginatedQueryResult } from "../../lib/paginatedQuery";
+import { parseParams, toSearchParams } from "../../lib/params/paramsUtils";
+import Pagination from "./Pagination";
 
 export interface Column<T, P = any> {
   key: string; // unique key for the column

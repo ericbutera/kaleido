@@ -1,12 +1,12 @@
-import GenericList, { type Column } from "@/components/common/GenericList";
-import { displayLocalDateTime } from "@/lib/date";
-import type { components } from "@/lib/openapi/react-query/api";
-import type { PaginatedQueryResult } from "@/lib/paginatedQuery";
+import { displayLocalDateTime } from "../../lib/date";
+import type { components } from "../../lib/openapi/react-query/api";
+import type { PaginatedQueryResult } from "../../lib/paginatedQuery";
 import {
   adminTasksSchema,
   type AdminTasksParams,
-} from "@/lib/params/adminTasksParams";
-import { useAdminTasks } from "@/lib/queries";
+} from "../../lib/params/adminTasksParams";
+import { useAdminTasks } from "../../lib/queries";
+import GenericList, { type Column } from "../common/GenericList";
 
 // TODO: fix type
 type Task = components["schemas"]["AdminTaskResponse"];

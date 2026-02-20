@@ -1,16 +1,16 @@
-import Layout from "@/auth/components/auth/Layout";
-import GoogleOAuthButton from "@/auth/components/GoogleOAuthButton";
-import { useAuthApi } from "@/auth/lib/AuthContext";
-import { handleFormError } from "@/auth/lib/form";
 import { faStore } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { Link, useNavigate } from "react-router-dom";
+import Layout from "../../components/auth/Layout";
+import GoogleOAuthButton from "../../components/GoogleOAuthButton";
+import { useAuthApi } from "../../lib/AuthContext";
+import { handleFormError } from "../../lib/form";
 
 // TODO:
-// import { FLAG_OAUTH, FLAG_REGISTRATION } from "@/auth/lib/featureFlags";
-// import { useFeatureFlag, useRegisterUser } from "@/auth/lib/queries";
+// import { FLAG_OAUTH, FLAG_REGISTRATION } from "../../lib/featureFlags";
+// import { useFeatureFlag, useRegisterUser } from "../../lib/queries";
 
 type SignUp = {
   email: string;
