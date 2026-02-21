@@ -24,7 +24,8 @@ jobs:
         run: npm install -g pnpm@8
 
       - name: Install dependencies (kaleido)
-        run: pnpm install --frozen-lockfile
+        # Lockfile is not committed in this repo; allow install in CI
+        run: pnpm install --no-frozen-lockfile
         working-directory: typescript/packages/kaleido
 
       - name: Build package (kaleido)
