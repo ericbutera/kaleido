@@ -50,3 +50,6 @@ pub use traits::{
     CooldownType, EmailService, MetricsRecorder, NoOpAuditLogger, NoOpCooldownManager,
     NoOpEmailService, NoOpMetricsRecorder,
 };
+
+pub use controllers::oauth;
+pub use controllers::oauth::routes as oauth_routes;

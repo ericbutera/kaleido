@@ -10,7 +10,9 @@ import { handleFormError } from "../../lib/form";
 
 // TODO:
 // import { FLAG_OAUTH, FLAG_REGISTRATION } from "../../lib/featureFlags";
+import { FLAG_OAUTH, FLAG_REGISTRATION } from "../../../featureFlags";
 // import { useFeatureFlag, useRegisterUser } from "../../lib/queries";
+import { useFeatureFlag } from "../../../featureFlags";
 
 type SignUp = {
   email: string;
@@ -32,8 +34,10 @@ export default function SignUp({ redirectUrl = "" }: { redirectUrl?: string }) {
   });
 
   const navigate = useNavigate();
-  const registrationEnabled = true; // const registrationEnabled = useFeatureFlag(FLAG_REGISTRATION);
-  const oauthEnabled = false; // TODO: const oauthEnabled = useFeatureFlag(FLAG_OAUTH);
+  // const registrationEnabled = true;
+  const registrationEnabled = useFeatureFlag(FLAG_REGISTRATION);
+  // const oauthEnabled = false;
+  const oauthEnabled = useFeatureFlag(FLAG_OAUTH);
   const { useRegisterUser } = useAuthApi();
   const registerHook = useRegisterUser();
 

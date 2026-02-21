@@ -4,27 +4,14 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
-# Async
 async-trait = { workspace = true }
 tokio = { workspace = true }
-
-# Serialization
 serde = { workspace = true }
 serde_json = { workspace = true }
-
-# Time
 chrono = { workspace = true }
-
-# Database (optional, for durable storage)
 sea-orm = { workspace = true, optional = true }
-
-# Error handling
 thiserror = { workspace = true }
-
-# Logging
 tracing = { workspace = true }
-
-# ID generation
 uuid = { workspace = true }
 
 [features]
