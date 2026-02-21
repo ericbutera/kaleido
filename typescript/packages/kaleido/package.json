@@ -1,74 +1,74 @@
 {
-    "name": "@ericbutera/kaleido",
-    "version": "0.1.8",
-    "description": "Shared UI components and framework utilities for Kaleido",
-    "type": "module",
-    "main": "./dist/index.js",
-    "types": "./dist/index.d.ts",
-    "exports": {
-        ".": {
-            "types": "./dist/index.d.ts",
-            "import": "./dist/index.js"
-        }
-    },
-    "files": [
-        "dist",
-        "README.md"
-    ],
-    "scripts": {
-        "build": "npx vite build",
-        "dev": "npx vite build --watch",
-        "lint": "eslint src",
-        "clean": "rm -rf dist",
-        "typecheck": "npx tsc --noEmit"
-    },
-    "peerDependencies": {
-        "@fortawesome/fontawesome-svg-core": ">=6.0.0",
-        "@fortawesome/free-solid-svg-icons": ">=6.0.0",
-        "@fortawesome/react-fontawesome": ">=3.1.0",
-        "@tanstack/react-query": "^5.0.0",
-        "react": "^18.0.0 || ^19.0.0",
-        "react-dom": "^18.0.0 || ^19.0.0",
-        "react-hook-form": "^7.0.0",
-        "react-hot-toast": "^2.0.0",
-        "react-router-dom": "^6.0.0 || ^7.0.0"
-    },
-    "dependencies": {
-        "@fortawesome/free-brands-svg-icons": "^7.2.0",
-        "@types/lodash-es": "^4.17.12",
-        "lodash-es": "^4.17.23",
-        "qrcode.react": "^4.2.0",
-        "zod": "^3.23.0"
-    },
-    "devDependencies": {
-        "@fortawesome/fontawesome-svg-core": "^7.1.0",
-        "@fortawesome/free-solid-svg-icons": "^7.1.0",
-        "@fortawesome/react-fontawesome": "^3.1.1",
-        "@tanstack/react-query": "^5.0.0",
-        "@types/node": "^25.3.0",
-        "@types/react": "^19.2.5",
-        "@types/react-dom": "^19.2.3",
-        "@vitejs/plugin-react": "^5.1.1",
-        "eslint": "^10.0.1",
-        "react": "^19.2.0",
-        "react-dom": "^19.2.0",
-        "react-hook-form": "^7.71.1",
-        "react-hot-toast": "^2.6.0",
-        "react-router-dom": "^7.0.0",
-        "typescript": "~5.9.3",
-        "vite": "^7.2.4",
-        "vite-plugin-dts": "^4.5.4"
-    },
-    "keywords": [
-        "kaleido",
-        "ui",
-        "components"
-    ],
-    "author": "Eric Butera",
-    "license": "MIT",
-    "repository": {
-        "type": "git",
-        "url": "https://github.com/ericbutera/kaleido",
-        "directory": "typescript/packages/kaleido"
+  "name": "@ericbutera/kaleido",
+  "version": "0.1.9",
+  "description": "Shared UI components and framework utilities for Kaleido",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
     }
+  },
+  "files": [
+    "dist",
+    "README.md"
+  ],
+  "scripts": {
+    "build": "npx vite build",
+    "dev": "npx vite build --watch",
+    "lint": "eslint src",
+    "clean": "rm -rf dist",
+    "typecheck": "npx tsc --noEmit"
+  },
+  "peerDependencies": {
+    "@fortawesome/fontawesome-svg-core": ">=6.0.0",
+    "@fortawesome/free-solid-svg-icons": ">=6.0.0",
+    "@fortawesome/react-fontawesome": ">=3.1.0",
+    "@tanstack/react-query": "^5.0.0",
+    "react": "^18.0.0 || ^19.0.0",
+    "react-dom": "^18.0.0 || ^19.0.0",
+    "react-hook-form": "^7.0.0",
+    "react-hot-toast": "^2.0.0",
+    "react-router-dom": "^6.0.0 || ^7.0.0"
+  },
+  "dependencies": {
+    "@fortawesome/free-brands-svg-icons": "^7.2.0",
+    "@types/lodash-es": "^4.17.12",
+    "lodash-es": "^4.17.23",
+    "qrcode.react": "^4.2.0",
+    "zod": "^3.23.0"
+  },
+  "devDependencies": {
+    "@fortawesome/fontawesome-svg-core": "^7.1.0",
+    "@fortawesome/free-solid-svg-icons": "^7.1.0",
+    "@fortawesome/react-fontawesome": "^3.1.1",
+    "@tanstack/react-query": "^5.0.0",
+    "@types/node": "^25.3.0",
+    "@types/react": "^19.2.5",
+    "@types/react-dom": "^19.2.3",
+    "@vitejs/plugin-react": "^5.1.1",
+    "eslint": "^10.0.1",
+    "react": "^19.2.0",
+    "react-dom": "^19.2.0",
+    "react-hook-form": "^7.71.1",
+    "react-hot-toast": "^2.6.0",
+    "react-router-dom": "^7.0.0",
+    "typescript": "~5.9.3",
+    "vite": "^7.2.4",
+    "vite-plugin-dts": "^4.5.4"
+  },
+  "keywords": [
+    "kaleido",
+    "ui",
+    "components"
+  ],
+  "author": "Eric Butera",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ericbutera/kaleido",
+    "directory": "typescript/packages/kaleido"
+  }
 }
