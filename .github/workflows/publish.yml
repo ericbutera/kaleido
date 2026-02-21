@@ -29,7 +29,9 @@ jobs:
         working-directory: typescript/packages/kaleido
 
       - name: Build package (kaleido)
-        run: pnpm run build --if-present
+        # Do not pass `--if-present` through pnpm; it forwards to the script
+        # and Vite will fail on unknown option. Run the script directly.
+        run: pnpm run build
         working-directory: typescript/packages/kaleido
 
       # - name: Test
