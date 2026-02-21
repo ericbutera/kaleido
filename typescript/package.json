@@ -13,9 +13,13 @@
         "clean": "npm run clean --workspaces --if-present && rm -rf node_modules"
     },
     "devDependencies": {
-        "typescript": "~5.9.3",
+        "eslint": "^10.0.1",
         "prettier": "^3.0.0",
-        "eslint": "^9.39.1"
+        "typescript": "~5.9.3"
+    },
+    "overrides": {
+        "minimatch": "^10.2.1",
+        "ajv": "^8.17.2"
     },
     "engines": {
         "node": ">=18.0.0",
