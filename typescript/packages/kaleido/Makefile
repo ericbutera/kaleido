@@ -8,7 +8,7 @@ help:
 	@echo "  publish-major  - Bump major version and publish (0.1.0 -> 1.0.0)"
 
 build:
-	npm run build
+	pnpm run build
 
 publish-patch:
 	@if [ -n "$(shell git status --porcelain)" ]; then \
@@ -23,7 +23,8 @@ publish-patch:
 		git commit -m "chore(release): v$$version" || true; \
 		git tag -a "v$$version" -m "v$$version" || true; \
 		echo "Created tag v$$version"; \
-		echo "NOTE: not pushing. Run 'git push origin HEAD --follow-tags' when ready."
+		git push origin HEAD --follow-tags
+		echo "Don't forget to update consumer package.json version."
 
 publish-minor:
 	@if [ -n "$(shell git status --porcelain)" ]; then \
@@ -38,7 +39,8 @@ publish-minor:
 		git commit -m "chore(release): v$$version" || true; \
 		git tag -a "v$$version" -m "v$$version" || true; \
 		echo "Created tag v$$version"; \
-		echo "NOTE: not pushing. Run 'git push origin HEAD --follow-tags' when ready."
+		git push origin HEAD --follow-tags
+		echo "Don't forget to update consumer package.json version."
 
 publish-major:
 	@if [ -n "$(shell git status --porcelain)" ]; then \
@@ -53,6 +55,7 @@ publish-major:
 		git commit -m "chore(release): v$$version" || true; \
 		git tag -a "v$$version" -m "v$$version" || true; \
 		echo "Created tag v$$version"; \
-		echo "NOTE: not pushing. Run 'git push origin HEAD --follow-tags' when ready."
+		git push origin HEAD --follow-tags
+		echo "Don't forget to update consumer package.json version."
 
 

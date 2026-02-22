@@ -50,7 +50,9 @@ impl FeatureFlagService {
     }
 
     /// List all feature flags from database
-    pub async fn list_all(db: &DatabaseConnection) -> Result<Vec<feature_flags::Model>, GlassError> {
+    pub async fn list_all(
+        db: &DatabaseConnection,
+    ) -> Result<Vec<feature_flags::Model>, GlassError> {
         let flags = feature_flags::Entity::find()
             .order_by_asc(feature_flags::Column::FeatureKey)
             .all(db)

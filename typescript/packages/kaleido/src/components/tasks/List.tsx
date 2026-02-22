@@ -1,26 +1,23 @@
 import { displayLocalDateTime } from "../../lib/date";
-import type { components } from "../../lib/openapi/react-query/api";
 import type { PaginatedQueryResult } from "../../lib/paginatedQuery";
 import {
   adminTasksSchema,
   type AdminTasksParams,
 } from "../../lib/params/adminTasksParams";
-import { useAdminTasks } from "../../lib/queries";
+import type { Task } from "../../tasks/useTasks";
+import { useTasks } from "../../tasks/useTasks";
 import GenericList, { type Column } from "../common/GenericList";
-
-// TODO: fix type
-type Task = components["schemas"]["AdminTaskResponse"];
 
 interface ListProps {
   setSelectedTask: (task: Task | null) => void;
 }
 
 export default function List({ setSelectedTask }: ListProps) {
-  // Wrap the query hook to match PaginatedQueryResult interface
+  // Wrap the configured tasks hook to match PaginatedQueryResult interface
   const useTasksQuery = (
     params: AdminTasksParams,
   ): PaginatedQueryResult<Task> => {
-    const { data, raw, isLoading } = useAdminTasks(params);
+    const { data, raw, isLoading } = useTasks(params);
     return {
       data: data ?? [],
       isLoading,

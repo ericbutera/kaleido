@@ -23,7 +23,7 @@ where
 /// Public endpoint returning all feature flags (safe subset) for clients.
 #[utoipa::path(
     get,
-    path = "/flags",
+    path = "/feature-flags",
     responses(
         (status = 200, description = "List of feature flags", body = PaginatedResponse<PublicFlagResponse>)
     ),
