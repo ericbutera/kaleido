@@ -1,5 +1,6 @@
 // Auth provider and hooks
 export { AuthProvider, useAuthApi, useAuthConfig } from "./lib/AuthContext";
+export { useAuth } from "./lib/useAuth";
 
 // Types
 export type {

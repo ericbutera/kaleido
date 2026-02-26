@@ -1,4 +1,6 @@
 pub mod api_clients;
+pub mod auth_events;
+pub mod cooldowns;
 pub mod refresh_tokens;
 pub mod users;
 

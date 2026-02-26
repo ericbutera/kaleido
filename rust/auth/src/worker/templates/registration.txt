@@ -1,0 +1,10 @@
+Hi {{name}},
+
+Welcome to {{app_name}}!
+
+Please verify your account using this link:
+{{verification_url}}
+
+This link expires in 24 hours.
+
+If you didn't create an account, you can ignore this email.

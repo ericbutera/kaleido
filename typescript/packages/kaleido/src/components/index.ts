@@ -11,3 +11,7 @@ export { default as QRCodeGenerator } from "./common/QRCodeGenerator";
 // Tasks
 export { default as TasksList } from "./tasks/List";
 export { default as TasksModal } from "./tasks/Modal";
+
+// Admin Users
+export { default as AdminUsersList } from "./admin/users/List";
+export { default as AdminUsersModal } from "./admin/users/Modal";

@@ -9,16 +9,26 @@
 // - Extractors for securing routes
 // - HTTP controllers/routes for auth endpoints
 
+pub mod adapters;
 pub mod controllers;
 pub mod cookies;
 pub mod entities;
 pub mod error;
 pub mod extractors;
+pub mod features;
 pub mod services;
 pub mod tokens;
 pub mod traits;
+pub mod worker;
 
 // Re-export commonly used types
+pub use adapters::{
+    build_default_auth_service, create_auth_service, AuthEmailService, AuthTaskQueue,
+    BackendCooldownManager, ClosureCooldownManager, ClosureEmailService, CooldownBackend,
+    CooldownBackendByType, DefaultAuthService, DefaultCooldownManager, DefaultEnvAuthService,
+    EmailTaskDispatcher, EnvConfigProvider, FnMetricsRecorder, MappedCooldownBackend,
+    SeaOrmAuditLogger, SeaOrmCooldownBackend, StaticConfigProvider, TaskQueueEmailService,
+};
 pub use controllers::auth::{AuthRouteStorage, MessageResponse};
 pub use controllers::routes;
 pub use cookies::{clear_refresh_cookie_value, refresh_cookie_value, REFRESH_COOKIE_NAME};
@@ -27,6 +37,7 @@ pub use extractors::{
     AdminUserContext, ApiClientContext, ApiClientIdentity, AuthIdentity, AuthInfo, AuthStorage,
     UserContext, UserIdentity, VerifiedUserContext,
 };
+pub use features::{routes_for_features, AuthFeature, FeatureSet};
 pub use services::{
     api_client::{
         ApiClientCredentials, ApiClientService, ClientLoginRequest, ClientLoginResponse,

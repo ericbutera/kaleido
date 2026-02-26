@@ -19,6 +19,10 @@ pub mod memory;
 #[cfg(feature = "durable")]
 pub mod durable;
 
+// Worker runtime helpers (optional, requires "durable" feature)
+#[cfg(feature = "durable")]
+pub mod worker;
+
 // Re-exports (only when durable storage is enabled)
 #[cfg(feature = "durable")]
 pub use entities::background_tasks;

@@ -2,10 +2,27 @@
 export * as auth from "./auth";
 export * as components from "./components";
 export * as featureFlags from "./featureFlags";
+export {
+  default,
+  default as kaleido,
+  type KaleidoAppConfig,
+  type KaleidoRuntimeConfig,
+  type KaleidoToggleConfig,
+} from "./kaleido";
+export * as openapi from "./openapi";
 export * as pages from "./pages";
 export * as tasks from "./tasks";
+export * as users from "./users";
 
-export { AuthProvider, useAuthApi, useAuthConfig } from "./auth";
+export {
+  configureKaleido,
+  type KaleidoConfig,
+  type KaleidoFeature,
+  type KaleidoFeatureAdapters,
+} from "./configureKaleido";
+export * from "./openapi";
+
+export { AuthProvider, useAuth, useAuthApi, useAuthConfig } from "./auth";
 export { default as GenericList } from "./components/common/GenericList";
 export type { Column, GenericListProps } from "./components/common/GenericList";
 export { default as Pagination } from "./components/common/Pagination";
@@ -28,6 +45,7 @@ export type {
 } from "./auth";
 
 export type { AdminTasksParams } from "./lib/params/adminTasksParams";
+export type { AdminUsersParams } from "./lib/params/adminUsersParams";
 export {
   buildApiQuery,
   parseParams,

@@ -26,6 +26,7 @@ npm run build
 
 - **auth** - JWT authentication, cookies, user management, OAuth
 - **background_jobs** - Durable background job queue with memory/persistent storage
+- **glass** - Shared application services and primitives (including shared email transport/templates)
 
 ### TypeScript
 
@@ -58,6 +59,10 @@ Each language workspace is independent. Navigate to the appropriate directory an
 **TypeScript**: Add new package directory and reference in `typescript/package.json` workspaces
 
 **Go**: Add new module directory with `go.mod`
+
+### Starter Template
+
+See `STARTER_TEMPLATE.md` for the initial SaaS starter blueprint.
 
 ## License
 
