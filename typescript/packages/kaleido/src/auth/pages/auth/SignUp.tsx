@@ -8,11 +8,11 @@ import GoogleOAuthButton from "../../components/GoogleOAuthButton";
 import { useAuthApi } from "../../lib/AuthContext";
 import { handleFormError } from "../../lib/form";
 
-// TODO:
-// import { FLAG_OAUTH, FLAG_REGISTRATION } from "../../lib/featureFlags";
-import { FLAG_OAUTH, FLAG_REGISTRATION } from "../../../featureFlags";
-// import { useFeatureFlag, useRegisterUser } from "../../lib/queries";
-import { useFeatureFlag } from "../../../featureFlags";
+import {
+  FLAG_OAUTH,
+  FLAG_REGISTRATION,
+  useFeatureFlag,
+} from "../../../featureFlags";
 
 type SignUp = {
   email: string;

@@ -1,7 +1,7 @@
 import type { ReactNode } from "react";
 import { getAdminNav, getSiteNavigation } from "./adminLayoutConfig";
 
-export default function AdminLayout({
+export default function Layout({
   title,
   children,
 }: {

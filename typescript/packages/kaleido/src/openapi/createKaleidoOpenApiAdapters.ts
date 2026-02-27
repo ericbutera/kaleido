@@ -1,10 +1,10 @@
+import type { TasksParams } from "../admin/params/TasksParams";
+import type { UsersParams } from "../admin/params/UsersParams";
 import type { KaleidoFeatureAdapters } from "../configureKaleido";
 import type {
   FeatureFlagsConfig,
   UseFeatureFlagsOpts,
 } from "../featureFlags/useFeatureFlag";
-import type { AdminTasksParams } from "../lib/params/adminTasksParams";
-import type { AdminUsersParams } from "../lib/params/adminUsersParams";
 import type { User } from "../users/useUsers";
 
 type OpenApiClientLike = {
@@ -123,7 +123,7 @@ function buildTasksConfig(options: CreateKaleidoOpenApiAdaptersOptions) {
   };
 
   return {
-    useTasks: (params?: AdminTasksParams) => {
+    useTasks: (params?: TasksParams) => {
       const response = (options.api.useQuery as any)("get", mapping.listPath, {
         params: {
           query: {
@@ -192,7 +192,7 @@ function buildUsersConfig(options: CreateKaleidoOpenApiAdaptersOptions) {
   };
 
   return {
-    useUsers: (params?: AdminUsersParams) => {
+    useUsers: (params?: UsersParams) => {
       const response = (options.api.useQuery as any)("get", mapping.listPath, {
         params: {
           query: {

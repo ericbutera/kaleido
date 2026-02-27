@@ -57,16 +57,21 @@ struct AuthEmailProcessorRuntime {
 
 impl AuthEmailProcessorRuntime {
     fn new(config: &AuthWorkerConfig) -> Result<Self, WorkerError> {
-        let mut mailer_builder = AsyncSmtpTransport::<Tokio1Executor>::relay(&config.smtp.host)
-            .map_err(|e| format!("failed to init SMTP relay: {}", e))?
-            .port(config.smtp.port);
-
-        if let (Some(username), Some(password)) = (&config.smtp.username, &config.smtp.password) {
-            mailer_builder =
-                mailer_builder.credentials(Credentials::new(username.clone(), password.clone()));
-        }
-
-        let mailer = mailer_builder.build();
+        // Prefer a dangerous/plain builder when credentials are not provided (e.g. MailHog on 1025),
+        // otherwise use relay with credentials which enables STARTTLS.
+        let mailer = if let (Some(username), Some(password)) =
+            (&config.smtp.username, &config.smtp.password)
+        {
+            let mut b = AsyncSmtpTransport::<Tokio1Executor>::relay(&config.smtp.host)
+                .map_err(|e| format!("failed to init SMTP relay: {}", e))?
+                .port(config.smtp.port);
+            b = b.credentials(Credentials::new(username.clone(), password.clone()));
+            b.build()
+        } else {
+            AsyncSmtpTransport::<Tokio1Executor>::builder_dangerous(&config.smtp.host)
+                .port(config.smtp.port)
+                .build()
+        };
 
         let from_mailbox =
             Mailbox::new(

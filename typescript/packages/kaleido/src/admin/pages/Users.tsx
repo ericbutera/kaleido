@@ -1,7 +1,8 @@
 import { useState } from "react";
-import AdminLayout from "../../components/admin/AdminLayout";
-import { UsersList, UsersModal } from "../../users";
 import type { User } from "../../users/useUsers";
+import Layout from "../components/Layout";
+import { default as List } from "../components/users/List";
+import { default as Modal } from "../components/users/Modal";
 
 export default function Users() {
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
@@ -23,13 +24,9 @@ export default function Users() {
   };
 
   return (
-    <AdminLayout title="Users">
-      <UsersList onCreateUser={openCreate} onSelectUser={openEdit} />
-      <UsersModal
-        mode={mode}
-        selectedUser={selectedUser}
-        onClose={closeModal}
-      />
-    </AdminLayout>
+    <Layout title="Users">
+      <List onCreateUser={openCreate} onSelectUser={openEdit} />
+      <Modal mode={mode} selectedUser={selectedUser} onClose={closeModal} />
+    </Layout>
   );
 }

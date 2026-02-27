@@ -8,12 +8,11 @@
 
 pub mod entities;
 pub mod error;
+pub mod memory;
+pub mod openapi;
 pub mod queue;
 pub mod storage;
 pub mod task;
-
-// In-memory implementation (default)
-pub mod memory;
 
 // Durable implementation (optional, requires "durable" feature)
 #[cfg(feature = "durable")]

@@ -1,12 +1,9 @@
-import { displayLocalDateTime } from "../../lib/date";
-import type { PaginatedQueryResult } from "../../lib/paginatedQuery";
-import {
-  adminTasksSchema,
-  type AdminTasksParams,
-} from "../../lib/params/adminTasksParams";
-import type { Task } from "../../tasks/useTasks";
-import { useTasks } from "../../tasks/useTasks";
-import GenericList, { type Column } from "../common/GenericList";
+import { GenericList, type Column } from "../../../components";
+import { displayLocalDateTime } from "../../../lib/date";
+import type { PaginatedQueryResult } from "../../../lib/paginatedQuery";
+import type { Task } from "../../../tasks/useTasks";
+import { useTasks } from "../../../tasks/useTasks";
+import { TasksSchema, type TasksParams } from "../../params/TasksParams";
 
 interface ListProps {
   setSelectedTask: (task: Task | null) => void;
@@ -14,9 +11,7 @@ interface ListProps {
 
 export default function List({ setSelectedTask }: ListProps) {
   // Wrap the configured tasks hook to match PaginatedQueryResult interface
-  const useTasksQuery = (
-    params: AdminTasksParams,
-  ): PaginatedQueryResult<Task> => {
+  const useTasksQuery = (params: TasksParams): PaginatedQueryResult<Task> => {
     const { data, raw, isLoading } = useTasks(params);
     return {
       data: data ?? [],
@@ -25,7 +20,7 @@ export default function List({ setSelectedTask }: ListProps) {
     };
   };
 
-  const columns: Column<Task, AdminTasksParams>[] = [
+  const columns: Column<Task, TasksParams>[] = [
     { key: "id", header: "ID" },
     { key: "task_type", header: "Type" },
     { key: "status", header: "Status" },
@@ -54,7 +49,7 @@ export default function List({ setSelectedTask }: ListProps) {
   return (
     <GenericList
       title="Background Tasks"
-      paramsSchema={adminTasksSchema}
+      paramsSchema={TasksSchema}
       useQuery={useTasksQuery}
       columns={columns}
       onRowClick={setSelectedTask}

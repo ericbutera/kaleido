@@ -35,6 +35,8 @@
   },
   "dependencies": {
     "@fortawesome/free-brands-svg-icons": "^7.2.0",
+    "openapi-fetch": "^0.17.0",
+    "openapi-react-query": "^0.5.4",
     "@types/lodash-es": "^4.17.12",
     "lodash-es": "^4.17.23",
     "qrcode.react": "^4.2.0",

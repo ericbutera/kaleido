@@ -20,6 +20,7 @@ pub mod services;
 pub mod tokens;
 pub mod traits;
 pub mod worker;
+pub mod openapi;
 
 // Re-export commonly used types
 pub use adapters::{

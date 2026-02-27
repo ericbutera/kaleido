@@ -1,11 +1,8 @@
+import { GenericList, type Column } from "../../../components";
 import type { PaginatedQueryResult } from "../../../lib/paginatedQuery";
-import {
-  adminUsersSchema,
-  type AdminUsersParams,
-} from "../../../lib/params/adminUsersParams";
 import type { User } from "../../../users/useUsers";
 import { useUsers } from "../../../users/useUsers";
-import GenericList, { type Column } from "../../common/GenericList";
+import { UsersSchema, type UsersParams } from "../../params/UsersParams";
 
 interface ListProps {
   onCreateUser: () => void;
@@ -21,9 +18,7 @@ function isUserVerified(user: User): boolean {
 }
 
 export default function List({ onCreateUser, onSelectUser }: ListProps) {
-  const useUsersQuery = (
-    params: AdminUsersParams,
-  ): PaginatedQueryResult<User> => {
+  const useUsersQuery = (params: UsersParams): PaginatedQueryResult<User> => {
     const { data, raw, isLoading } = useUsers(params);
     return {
       data: data ?? [],
@@ -32,7 +27,7 @@ export default function List({ onCreateUser, onSelectUser }: ListProps) {
     };
   };
 
-  const columns: Column<User, AdminUsersParams>[] = [
+  const columns: Column<User, UsersParams>[] = [
     { key: "id", header: "ID" },
     {
       key: "email",
@@ -82,7 +77,7 @@ export default function List({ onCreateUser, onSelectUser }: ListProps) {
           Create User
         </button>
       }
-      paramsSchema={adminUsersSchema}
+      paramsSchema={UsersSchema}
       useQuery={useUsersQuery}
       columns={columns}
       onRowClick={onSelectUser}

@@ -1,7 +1,7 @@
 import { useState } from "react";
 import toast from "react-hot-toast";
-import AdminLayout from "../../components/admin/AdminLayout";
 import { useFeatureFlags, useUpdateFeatureFlag } from "../../featureFlags";
+import Layout from "../components/Layout";
 
 export default function FeatureFlags() {
   const { data: flags = [], isLoading, refetch } = useFeatureFlags();
@@ -34,7 +34,7 @@ export default function FeatureFlags() {
   if (isLoading) return <div className="p-6">Loading...</div>;
 
   return (
-    <AdminLayout title="Feature Flags">
+    <Layout title="Feature Flags">
       <div className="flex items-center justify-between mb-6">
         <div>
           <h1 className="text-2xl font-bold">Feature Flags</h1>
@@ -91,6 +91,6 @@ export default function FeatureFlags() {
           })}
         </div>
       </div>
-    </AdminLayout>
+    </Layout>
   );
 }

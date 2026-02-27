@@ -1,6 +1,6 @@
 import { z } from "zod";
 
-export const adminTasksSchema = z.object({
+export const TasksSchema = z.object({
   q: z.string().optional(),
   task_type: z.string().optional(),
   status: z.string().optional(),
@@ -10,18 +10,9 @@ export const adminTasksSchema = z.object({
   per_page: z.coerce.number().int().positive().default(20),
 });
 
-export type AdminTasksParams = z.infer<typeof adminTasksSchema>;
+export type TasksParams = z.infer<typeof TasksSchema>;
 
-export function parseAdminTasksParams(
-  searchParams: URLSearchParams,
-): AdminTasksParams {
-  const params = Object.fromEntries(searchParams.entries());
-  return adminTasksSchema.parse(params);
-}
-
-export function toSearchParams(
-  params: Partial<AdminTasksParams>,
-): URLSearchParams {
+export function toSearchParams(params: Partial<TasksParams>): URLSearchParams {
   const sp = new URLSearchParams();
   if (params.q) sp.set("q", params.q);
   if (params.task_type) sp.set("task_type", params.task_type);

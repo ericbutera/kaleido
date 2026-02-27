@@ -7,6 +7,7 @@ type AdminLayoutConfig = {
 
 let config: AdminLayoutConfig = {};
 
+// TODO: rename configureAdminLayout -> configureLayout
 export function configureAdminLayout(cfg: AdminLayoutConfig) {
   config = { ...config, ...cfg };
 }

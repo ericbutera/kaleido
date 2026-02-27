@@ -20,6 +20,7 @@ export { redirectToOrigin } from "./lib/utils";
 
 // Components
 export { default as AuthLayout } from "./components/auth/Layout";
+export { default as ProtectedRoute } from "./components/ProtectedRoute";
 
 // Pages
 export { default as ConfirmEmail } from "./pages/auth/ConfirmEmail";

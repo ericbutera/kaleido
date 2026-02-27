@@ -1,6 +1,6 @@
-import { displayLocalDateTime } from "../../lib/date";
-import type { Task } from "../../tasks/useTasks";
-import { useTask } from "../../tasks/useTasks";
+import { displayLocalDateTime } from "../../../lib/date";
+import type { Task } from "../../../tasks/useTasks";
+import { useTask } from "../../../tasks/useTasks";
 
 interface ModalProps {
   selectedTask: Task | null;

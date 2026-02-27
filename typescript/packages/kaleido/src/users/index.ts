@@ -20,6 +20,3 @@ export type {
   UsersMutation,
   UseUsersResult,
 } from "./useUsers";
-
-export { default as UsersList } from "../components/admin/users/List";
-export { default as UsersModal } from "../components/admin/users/Modal";
