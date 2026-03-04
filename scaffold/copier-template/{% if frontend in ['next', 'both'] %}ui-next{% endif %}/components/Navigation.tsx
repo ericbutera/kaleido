@@ -9,82 +9,41 @@ export default function Navigation() {
   const logout = authApi.useLogout();
 
   return (
-    <header
-      style={{
-        borderBottom: "1px solid #e2e8f0",
-        background: "#ffffff",
-      }}
-    >
-      <nav
-        style={{
-          maxWidth: 960,
-          margin: "0 auto",
-          padding: "0.75rem 1.5rem",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "space-between",
-          fontFamily: "system-ui, sans-serif",
-        }}
-      >
-        <div style={{ display: "flex", gap: "1rem", alignItems: "center" }}>
-          <Link
-            href="/"
-            style={{
-              fontWeight: 700,
-              textDecoration: "none",
-              color: "#111827",
-            }}
-          >
-            [[ project_slug ]]
+    <div className="navbar bg-base-100 shadow-sm">
+      <div className="flex-1">
+        <Link href="/" className="btn btn-ghost normal-case text-lg">
+          [[ project_slug ]]
+        </Link>
+        <Link href="/account" className="ml-4 hidden sm:inline">
+          Account
+        </Link>
+        {user?.is_admin && (
+          <Link href="/admin" className="btn btn-ghost ml-2 hidden sm:inline">
+            Admin
           </Link>
-          <Link
-            href="/account"
-            style={{ textDecoration: "none", color: "#374151" }}
+        )}
+      </div>
+      <div className="flex-none">
+        {isLoading ? null : user ? (
+          <button
+            type="button"
+            onClick={() => logout.mutateAsync()}
+            disabled={logout.isPending}
+            className="btn btn-ghost"
           >
-            Account
-          </Link>
-          {user?.is_admin && (
-            <Link
-              href="/admin"
-              style={{ textDecoration: "none", color: "#374151" }}
-            >
-              Admin
+            {logout.isPending ? "Signing out..." : "Sign out"}
+          </button>
+        ) : (
+          <div className="space-x-2">
+            <Link href="/login" className="btn btn-ghost">
+              Login
             </Link>
-          )}
-        </div>
-        <div style={{ display: "flex", gap: "0.75rem", alignItems: "center" }}>
-          {isLoading ? null : user ? (
-            <button
-              type="button"
-              onClick={() => logout.mutateAsync()}
-              disabled={logout.isPending}
-              style={{
-                background: "transparent",
-                border: "1px solid #d1d5db",
-                borderRadius: 6,
-                padding: "0.4rem 0.8rem",
-              }}
-            >
-              {logout.isPending ? "Signing out..." : "Sign out"}
-            </button>
-          ) : (
-            <>
-              <Link
-                href="/login"
-                style={{ textDecoration: "none", color: "#374151" }}
-              >
-                Login
-              </Link>
-              <Link
-                href="/signup"
-                style={{ textDecoration: "none", color: "#374151" }}
-              >
-                Sign up
-              </Link>
-            </>
-          )}
-        </div>
-      </nav>
-    </header>
+            <Link href="/signup" className="btn btn-primary">
+              Sign up
+            </Link>
+          </div>
+        )}
+      </div>
+    </div>
   );
 }

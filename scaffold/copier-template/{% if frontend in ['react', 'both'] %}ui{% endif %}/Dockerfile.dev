@@ -1,4 +1,4 @@
-FROM node:20-alpine
+FROM node:25-alpine
 WORKDIR /app
 
 RUN corepack enable && corepack prepare pnpm@latest --activate
@@ -9,4 +9,4 @@ RUN pnpm install --frozen-lockfile || pnpm install
 COPY . .
 # Bind to 0.0.0.0 for containerized dev
 EXPOSE 5173
-CMD ["sh", "-lc", "pnpm install --frozen-lockfile || pnpm install && pnpm run dev -- --host 0.0.0.0 --port 5173"]
+CMD ["sh", "-lc", "CI=true pnpm install --no-frozen-lockfile --force --prod=false && pnpm run dev -- --host 0.0.0.0 --port 5173"]
