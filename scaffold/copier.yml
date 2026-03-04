@@ -1,0 +1,49 @@
+_min_copier_version: "9.0.0"
+_subdirectory: copier-template
+_answers_file: .copier-answers.yml
+_templates_suffix: ""
+
+_envops:
+  autoescape: false
+  keep_trailing_newline: true
+  variable_start_string: "[["
+  variable_end_string: "]]"
+
+project_name:
+  type: str
+  help: Human-friendly project name
+  placeholder: MyCorner
+
+project_slug:
+  type: str
+  help: Directory/repo slug
+  default: "[[ project_name|lower|replace(' ', '-')|replace('_', '-') ]]"
+
+frontend:
+  type: str
+  help: Frontend option
+  choices:
+    - react
+    - next
+    - both
+  default: both
+
+_message_after_copy: |
+  Scaffold created at [[ _copier_conf.dst_path ]].
+
+  Next steps:
+  1) cd [[ _copier_conf.dst_path ]]
+  2) git init
+  3) git add . && git commit -m "Initial scaffold"
+  4) docker compose up -d postgres
+  5) cargo run --bin api
+
+  Later upgrades:
+  copier update
+
+  Note:
+  Non-git projects are not supported for updates.
+
+_message_after_update: |
+  Template update applied to [[ _copier_conf.dst_path ]].
+  Review and resolve any merge conflicts, then run your normal checks.
