@@ -1,8 +1,8 @@
-import { defineConfig } from "vite";
 import tailwindcss from "@tailwindcss/vite";
 import react from "@vitejs/plugin-react";
 import fs from "node:fs";
 import path from "node:path";
+import { defineConfig } from "vite";
 
 const localKaleido = path.resolve(
   __dirname,
