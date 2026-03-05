@@ -11,18 +11,21 @@ use crate::storage::AppStorage;
 use axum::http::{HeaderName, HeaderValue, Method};
 use axum::Router;
 use std::sync::Arc;
-use tower_http::cors::CorsLayer;
+use tower_http::cors::{AllowOrigin, CorsLayer};
 use tower_http::trace::TraceLayer;
 use utoipa::OpenApi;
 use utoipa_swagger_ui::SwaggerUi;
 
 pub async fn app(app_state: Arc<AppStorage>) -> Router {
     let cfg = Config::get();
-    let origin = HeaderValue::from_str(&cfg.frontend_url)
-        .unwrap_or_else(|_| HeaderValue::from_static("http://localhost:5173"));
+    let origins: Vec<HeaderValue> = cfg
+        .cors_allowed_origins
+        .iter()
+        .filter_map(|o| HeaderValue::from_str(o).ok())
+        .collect();
 
     let cors = CorsLayer::new()
-        .allow_origin(origin)
+        .allow_origin(AllowOrigin::list(origins))
         .allow_methods([
             Method::GET,
             Method::POST,

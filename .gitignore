@@ -3,6 +3,7 @@
 /rust/**/target/
 **/Cargo.lock
 *.pdb
+target/
 
 # TypeScript/Node
 /typescript/node_modules/

@@ -5,6 +5,7 @@ use std::env;
 pub struct Config {
     pub database_url: String,
     pub frontend_url: String,
+    pub cors_allowed_origins: Vec<String>,
     pub api_url: String,
     pub jwt_secret: String,
     pub app_name: String,
@@ -27,6 +28,12 @@ impl Config {
                 .unwrap_or_else(|_| "postgres://postgres:postgres@localhost:5432/app".to_string()),
             frontend_url: env::var("FRONTEND_URL")
                 .unwrap_or_else(|_| "http://localhost:5173".to_string()),
+            cors_allowed_origins: env::var("CORS_ALLOWED_ORIGINS")
+                .unwrap_or_else(|_| "http://localhost:5173,http://localhost:3001".to_string())
+                .split(',')
+                .map(|s| s.trim().to_string())
+                .filter(|s| !s.is_empty())
+                .collect(),
             api_url: env::var("API_URL").unwrap_or_else(|_| "http://localhost:3000".to_string()),
             jwt_secret: env::var("JWT_SECRET").unwrap_or_else(|_| "change_me_in_dev".to_string()),
             app_name: env::var("APP_NAME").unwrap_or_else(|_| "App".to_string()),

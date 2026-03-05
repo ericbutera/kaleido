@@ -65,6 +65,7 @@ export default function App() {
             <Route path="/admin" element={<admin.Route />}>
               <Route index element={<admin.Dashboard />} />
               <Route path="tasks" element={<admin.Tasks />} />
+              <Route path="feature-flag" element={<admin.FeatureFlags />} />
               <Route path="feature-flags" element={<admin.FeatureFlags />} />
             </Route>
 
