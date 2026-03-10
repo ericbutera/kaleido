@@ -63,10 +63,12 @@ export default function App() {
             <Route path="/reset" element={<auth.Reset />} />
 
             <Route path="/admin" element={<admin.Route />}>
-              <Route index element={<admin.Dashboard />} />
-              <Route path="tasks" element={<admin.Tasks />} />
-              <Route path="feature-flag" element={<admin.FeatureFlags />} />
-              <Route path="feature-flags" element={<admin.FeatureFlags />} />
+              <Route element={<admin.LayoutRoute />}>
+                <Route index element={<admin.Dashboard />} />
+                <Route path="tasks" element={<admin.Tasks />} />
+                <Route path="feature-flag" element={<admin.FeatureFlags />} />
+                <Route path="feature-flags" element={<admin.FeatureFlags />} />
+              </Route>
             </Route>
 
             <Route path="*" element={<Home />} />

@@ -1,6 +1,5 @@
 import { useState } from "react";
 import type { User } from "../../users/useUsers";
-import Layout from "../components/Layout";
 import { default as List } from "../components/users/List";
 import { default as Modal } from "../components/users/Modal";
 
@@ -24,9 +23,9 @@ export default function Users() {
   };
 
   return (
-    <Layout title="Users">
+    <>
       <List onCreateUser={openCreate} onSelectUser={openEdit} />
       <Modal mode={mode} selectedUser={selectedUser} onClose={closeModal} />
-    </Layout>
+    </>
   );
 }

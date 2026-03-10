@@ -1,5 +1,6 @@
 export { configureAdminLayout } from "../admin/components/adminLayoutConfig";
 export { default as Layout } from "../admin/components/Layout";
+export { default as LayoutRoute } from "../admin/components/LayoutRoute";
 export { default as Dashboard } from "../admin/pages/Dashboard";
 export { default as FeatureFlags } from "../admin/pages/FeatureFlags";
 export { default as Tasks } from "../admin/pages/Tasks";

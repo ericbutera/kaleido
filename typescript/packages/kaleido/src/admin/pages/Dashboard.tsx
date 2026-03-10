@@ -1,5 +1,3 @@
-import Layout from "../components/Layout";
-
 export default function Dashboard() {
-  return <Layout title="Admin Dashboard">Admin panel</Layout>;
+  return <div>Admin panel</div>;
 }
