@@ -1,4 +1,5 @@
 use crate::storage::AppStorage;
+use auth::AdminUserContext;
 use axum::{routing::get, Json, Router};
 use glass::feature_flags;
 use serde_json::json;
@@ -10,6 +11,11 @@ pub fn routes() -> Router<Arc<AppStorage>> {
         .nest("/api/oauth", auth::oauth_routes())
         .nest("/api/admin/feature-flags", feature_flags::admin_routes())
         .nest("/api/feature-flags", feature_flags::public_routes())
+        .nest(
+            "/api/admin/tasks",
+            background_jobs::admin::admin_routes::<AppStorage, AdminUserContext<AppStorage>>(),
+        )
+        .nest("/api/admin/users", auth::admin_routes())
         .route("/api/health", get(health))
         .route("/", get(root))
 }

@@ -31,6 +31,11 @@ export default function Nav() {
           Feature Flags
         </Link>
       </li>
+      <li>
+        <Link href="/admin/users" className={linkClass("/admin/users")}>
+          Users
+        </Link>
+      </li>
     </ul>
   );
 }

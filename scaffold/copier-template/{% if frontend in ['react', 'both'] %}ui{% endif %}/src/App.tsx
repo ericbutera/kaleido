@@ -68,6 +68,7 @@ export default function App() {
                 <Route path="tasks" element={<admin.Tasks />} />
                 <Route path="feature-flag" element={<admin.FeatureFlags />} />
                 <Route path="feature-flags" element={<admin.FeatureFlags />} />
+                <Route path="users" element={<admin.Users />} />
               </Route>
             </Route>
 

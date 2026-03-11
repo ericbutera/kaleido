@@ -30,6 +30,14 @@ export default function Nav() {
           Feature Flags
         </NavLink>
       </li>
+      <li>
+        <NavLink
+          to="/admin/users"
+          className={({ isActive }) => (isActive ? "menu-active" : undefined)}
+        >
+          Users
+        </NavLink>
+      </li>
     </ul>
   );
 }

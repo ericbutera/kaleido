@@ -22,6 +22,10 @@ pub mod durable;
 #[cfg(feature = "durable")]
 pub mod worker;
 
+// Admin HTTP routes for background task management (requires "durable" feature)
+#[cfg(feature = "durable")]
+pub mod admin;
+
 // Re-exports (only when durable storage is enabled)
 #[cfg(feature = "durable")]
 pub use entities::background_tasks;

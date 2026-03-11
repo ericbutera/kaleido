@@ -191,3 +191,7 @@ where
         })
     }
 }
+
+// background_jobs is already a dependency of `auth`, so we can implement
+// AdminVerified here — satisfying the orphan rule (local type, external trait).
+impl<S> background_jobs::admin::AdminVerified for AdminUserContext<S> {}

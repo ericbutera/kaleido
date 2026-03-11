@@ -16,11 +16,11 @@ pub mod entities;
 pub mod error;
 pub mod extractors;
 pub mod features;
+pub mod openapi;
 pub mod services;
 pub mod tokens;
 pub mod traits;
 pub mod worker;
-pub mod openapi;
 
 // Re-export commonly used types
 pub use adapters::{
@@ -30,6 +30,7 @@ pub use adapters::{
     EmailTaskDispatcher, EnvConfigProvider, FnMetricsRecorder, MappedCooldownBackend,
     SeaOrmAuditLogger, SeaOrmCooldownBackend, StaticConfigProvider, TaskQueueEmailService,
 };
+pub use controllers::admin::routes as admin_routes;
 pub use controllers::auth::{AuthRouteStorage, MessageResponse};
 pub use controllers::routes;
 pub use cookies::{clear_refresh_cookie_value, refresh_cookie_value, REFRESH_COOKIE_NAME};
