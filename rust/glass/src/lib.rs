@@ -1,10 +1,14 @@
+pub mod aggregator;
+pub mod auth_metrics;
 pub mod cooldown;
 pub mod data;
 pub mod email;
 pub mod error;
 pub mod feature_flags;
 pub mod features;
+pub mod metrics_controller;
 pub mod openapi;
+pub mod system_metrics;
 
 pub use error::GlassError;
 pub use openapi::SecurityAddon;

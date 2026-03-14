@@ -2,18 +2,21 @@ use utoipa::openapi::server::Server;
 
 // Re-exported path/schema helpers for glass-hosted features (feature flags, etc.)
 pub mod paths {
-    pub use crate::feature_flags::controller::public_flags;
     pub use crate::feature_flags::admin_controller::{list_flags, update_flag};
+    pub use crate::feature_flags::controller::public_flags;
+    pub use crate::metrics_controller::get_metrics;
 
     // expose utoipa marker types for the paths
-    pub use crate::feature_flags::controller::__path_public_flags;
     pub use crate::feature_flags::admin_controller::{__path_list_flags, __path_update_flag};
+    pub use crate::feature_flags::controller::__path_public_flags;
+    pub use crate::metrics_controller::__path_get_metrics;
 }
 
 pub mod schemas {
-    pub use crate::feature_flags::controller::PublicFlagResponse;
-    pub use crate::feature_flags::admin_controller::{FeatureFlagResponse, UpdateFlagRequest};
     pub use crate::data::pagination::PaginatedResponse;
+    pub use crate::feature_flags::admin_controller::{FeatureFlagResponse, UpdateFlagRequest};
+    pub use crate::feature_flags::controller::PublicFlagResponse;
+    pub use crate::system_metrics::SystemMetrics;
 }
 
 pub mod tags {

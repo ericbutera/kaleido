@@ -36,6 +36,11 @@ export default function Nav() {
           Users
         </Link>
       </li>
+      <li>
+        <Link href="/admin/metrics" className={linkClass("/admin/metrics")}>
+          Metrics
+        </Link>
+      </li>
     </ul>
   );
 }
