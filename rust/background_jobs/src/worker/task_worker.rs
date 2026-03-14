@@ -129,7 +129,7 @@ impl TaskWorker {
         }
 
         match result {
-            Ok(_) => {
+            Ok(()) => {
                 task_model.mark_completed(&self.db).await?;
                 if let Some(metrics) = &self.metrics {
                     metrics.record_completed(task_type);

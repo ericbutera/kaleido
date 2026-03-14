@@ -19,6 +19,7 @@ pub struct Model {
     pub updated_at: DateTime<Utc>,
     pub started_at: Option<DateTime<Utc>>,
     pub completed_at: Option<DateTime<Utc>>,
+    pub result: Option<String>,
 }
 
 #[derive(Copy, Clone, Debug, EnumIter, DeriveRelation)]
@@ -83,10 +84,20 @@ impl Model {
 
     /// Mark task as completed
     pub async fn mark_completed(&self, db: &DatabaseConnection) -> Result<Model, DbErr> {
+        self.mark_completed_with_result(db, None).await
+    }
+
+    /// Mark task as completed with an optional result message
+    pub async fn mark_completed_with_result(
+        &self,
+        db: &DatabaseConnection,
+        result: Option<String>,
+    ) -> Result<Model, DbErr> {
         let mut active: ActiveModel = self.clone().into();
         active.status = Set(TaskStatus::Completed.as_str().to_string());
         active.completed_at = Set(Some(Utc::now()));
         active.updated_at = Set(Utc::now());
+        active.result = Set(result);
         active.update(db).await
     }
 

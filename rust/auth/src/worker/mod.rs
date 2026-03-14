@@ -180,7 +180,9 @@ impl TaskProcessor for EmailRegistrationProcessor {
 
         self.runtime
             .send_email(&task.to, &subject, text_body, html_body)
-            .await
+            .await?;
+
+        Ok(())
     }
 }
 
@@ -220,7 +222,9 @@ impl TaskProcessor for EmailPasswordResetProcessor {
 
         self.runtime
             .send_email(&task.to, &subject, text_body, html_body)
-            .await
+            .await?;
+
+        Ok(())
     }
 }
 
