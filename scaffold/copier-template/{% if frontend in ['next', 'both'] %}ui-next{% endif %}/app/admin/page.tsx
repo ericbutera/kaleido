@@ -3,5 +3,9 @@
 import { admin } from "@ericbutera/kaleido";
 
 export default function AdminPage() {
-  return <admin.Dashboard />;
+  return (
+    <admin.Layout title="Dashboard">
+      <admin.Dashboard />
+    </admin.Layout>
+  );
 }
