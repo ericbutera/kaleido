@@ -1,11 +1,11 @@
 pub mod processors;
 
 use api::config::Config;
-use auth::worker::{
+use kaleido::auth::worker::{
     register_all_auth_processors as register_shared_auth_processors, AuthWorkerConfig,
     AuthWorkerSmtpConfig,
 };
-use background_jobs::worker::{TaskWorker, WorkerError};
+use kaleido::background_jobs::worker::{TaskWorker, WorkerError};
 use std::sync::Arc;
 
 pub use processors::*;

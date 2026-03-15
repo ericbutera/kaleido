@@ -2,10 +2,8 @@
 resolver = "2"
 
 members = [
-    "auth",
-    "background_jobs",
+    "kaleido",
     "kaleido_migrations",
-    "glass",
 ]
 
 [workspace.package]

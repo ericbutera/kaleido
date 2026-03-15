@@ -25,7 +25,5 @@ utoipa-swagger-ui = { version = "8", features = ["axum"] }
 chrono = { version = "0.4", features = ["serde"] }
 
 [patch."https://github.com/ericbutera/kaleido"]
-auth = { path = "../kaleido/rust/auth" }
-background_jobs = { path = "../kaleido/rust/background_jobs" }
-glass = { path = "../kaleido/rust/glass" }
+kaleido = { path = "../kaleido/rust/kaleido" }
 kaleido_migrations = { path = "../kaleido/rust/kaleido_migrations" }

@@ -1,10 +1,10 @@
 use crate::config::Config;
 use crate::tasks::TaskQueue;
 use crate::tasks::{create_auth_service, AppAuthService};
-use auth::controllers::oauth::OAuthRouteStorage;
-use auth::{AuthRouteStorage, AuthStorage};
-use background_jobs::admin::BackgroundTasksStorage;
-use glass::feature_flags::{FeatureFlagService, FeatureFlagStorage};
+use kaleido::auth::controllers::oauth::OAuthRouteStorage;
+use kaleido::auth::{AuthRouteStorage, AuthStorage};
+use kaleido::background_jobs::admin::BackgroundTasksStorage;
+use kaleido::glass::feature_flags::{FeatureFlagService, FeatureFlagStorage};
 use migration::MigratorTrait;
 use sea_orm::DatabaseConnection;
 
@@ -71,11 +71,11 @@ impl AuthStorage for AppStorage {
 }
 
 impl AuthRouteStorage for AppStorage {
-    type EmailService = auth::AuthEmailService;
-    type CooldownManager = auth::DefaultCooldownManager;
-    type AuditLogger = auth::SeaOrmAuditLogger;
-    type MetricsRecorder = auth::FnMetricsRecorder;
-    type ConfigProvider = auth::EnvConfigProvider;
+    type EmailService = kaleido::auth::AuthEmailService;
+    type CooldownManager = kaleido::auth::DefaultCooldownManager;
+    type AuditLogger = kaleido::auth::SeaOrmAuditLogger;
+    type MetricsRecorder = kaleido::auth::FnMetricsRecorder;
+    type ConfigProvider = kaleido::auth::EnvConfigProvider;
 
     fn db(&self) -> &DatabaseConnection {
         &self.db

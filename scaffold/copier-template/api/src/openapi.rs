@@ -1,6 +1,6 @@
-use auth::openapi as auth_openapi;
-use glass::openapi as glass_openapi;
-use glass::SecurityAddon;
+use kaleido::auth::openapi as auth_openapi;
+use kaleido::glass::openapi as glass_openapi;
+use kaleido::glass::SecurityAddon;
 use utoipa::OpenApi;
 
 #[derive(OpenApi)]
@@ -36,7 +36,7 @@ use utoipa::OpenApi;
             glass_openapi::schemas::UpdateFlagRequest,
             glass_openapi::schemas::PaginatedResponse<glass_openapi::schemas::FeatureFlagResponse>,
             glass_openapi::schemas::PaginatedResponse<glass_openapi::schemas::PublicFlagResponse>,
-            glass::data::pagination::PaginationParams,
+            kaleido::glass::data::pagination::PaginationParams,
         )
     ),
     tags(

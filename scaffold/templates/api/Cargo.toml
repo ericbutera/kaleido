@@ -28,6 +28,4 @@ utoipa = { workspace = true }
 utoipa-swagger-ui = { workspace = true }
 migration = { path = "../migration" }
 
-auth = { git = "https://github.com/ericbutera/kaleido", branch = "main" }
-background_jobs = { git = "https://github.com/ericbutera/kaleido", branch = "main", features = ["durable"] }
-glass = { git = "https://github.com/ericbutera/kaleido", branch = "main" }
+kaleido = { git = "https://github.com/ericbutera/kaleido", branch = "main" }

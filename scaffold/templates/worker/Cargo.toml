@@ -22,6 +22,4 @@ serde = { workspace = true }
 serde_json = { workspace = true }
 async-trait = { workspace = true }
 chrono = { workspace = true }
-background_jobs = { git = "https://github.com/ericbutera/kaleido", branch = "main", features = ["durable"] }
-auth = { git = "https://github.com/ericbutera/kaleido", branch = "main" }
-glass = { git = "https://github.com/ericbutera/kaleido", branch = "main" }
+kaleido = { git = "https://github.com/ericbutera/kaleido", branch = "main" }
