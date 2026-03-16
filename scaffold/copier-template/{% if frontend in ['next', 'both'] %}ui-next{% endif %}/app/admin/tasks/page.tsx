@@ -1,11 +1,17 @@
 "use client";
 
 import { admin } from "@ericbutera/kaleido";
+import { Suspense } from "react";
+import AuthRouter from "../../../components/AuthRouter";
 
 export default function AdminTasksPage() {
   return (
-    <admin.Layout title="Tasks">
-      <admin.Tasks />
-    </admin.Layout>
+    <Suspense>
+      <AuthRouter>
+        <admin.Layout title="Tasks">
+          <admin.Tasks />
+        </admin.Layout>
+      </AuthRouter>
+    </Suspense>
   );
 }
