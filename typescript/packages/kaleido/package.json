@@ -1,6 +1,6 @@
 {
   "name": "@ericbutera/kaleido",
-  "version": "0.3.1",
+  "version": "0.4.0",
   "description": "Shared UI components and framework utilities for Kaleido",
   "type": "module",
   "main": "./dist/index.js",
