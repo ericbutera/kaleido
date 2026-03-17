@@ -1,5 +1,5 @@
 use chrono::{Duration, Utc};
-use sea_orm::{prelude::*, ColumnTrait, FromQueryResult, QuerySelect};
+use sea_orm::{prelude::*, sea_query::Alias, ColumnTrait, ExprTrait, FromQueryResult, QuerySelect};
 use serde::{Deserialize, Serialize};
 use utoipa::ToSchema;
 
@@ -158,8 +158,8 @@ impl Aggregator {
 
     /// SUM of `sum_col` for rows newer than `days` days.
     ///
-    /// Uses `f64` internally because PostgreSQL returns `NUMERIC` for `SUM(bigint)`,
-    /// which is incompatible with `i64` decoding.
+    /// Casts the SUM to FLOAT8 so the result decodes correctly regardless of
+    /// whether the underlying column is INT4 (SUM → INT8) or INT8 (SUM → NUMERIC).
     pub async fn recent_sum<E>(
         db: &DatabaseConnection,
         date_col: E::Column,
@@ -179,7 +179,7 @@ impl Aggregator {
 
         let res: Option<SumResult> = E::find()
             .select_only()
-            .column_as(sum_col.sum(), "total")
+            .column_as(sum_col.sum().cast_as(Alias::new("float8")), "total")
             .filter(date_col.gte(threshold))
             .into_model::<SumResult>()
             .one(db)

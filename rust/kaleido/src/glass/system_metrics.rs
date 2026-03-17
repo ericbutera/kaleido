@@ -1,5 +1,6 @@
 use crate::glass::aggregator::NamedStat;
 use crate::glass::auth_metrics::AuthMetrics;
+use crate::glass::background_task_metrics::BackgroundTaskMetrics;
 use sea_orm::DatabaseConnection;
 use serde::Serialize;
 use utoipa::ToSchema;
@@ -13,12 +14,16 @@ use utoipa::ToSchema;
 #[derive(Debug, Serialize, ToSchema)]
 pub struct SystemMetrics {
     pub auth: Vec<NamedStat>,
+    pub background_tasks: Vec<NamedStat>,
 }
 
 impl SystemMetrics {
     pub async fn collect(db: &DatabaseConnection) -> Self {
+        let (auth, background_tasks) =
+            tokio::join!(AuthMetrics::fetch(db), BackgroundTaskMetrics::fetch(db),);
         Self {
-            auth: AuthMetrics::fetch(db).await.into_named_stats(),
+            auth: auth.into_named_stats(),
+            background_tasks,
         }
     }
 }

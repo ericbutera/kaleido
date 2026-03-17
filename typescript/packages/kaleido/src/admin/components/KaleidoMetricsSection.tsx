@@ -40,12 +40,9 @@ export default function KaleidoMetricsSection({
               <StatItem
                 key={stat.key}
                 title={stat.label}
-                value={
-                  stat.error
-                    ? `Error: ${stat.error}`
-                    : stat.value.toLocaleString()
-                }
+                value={stat.value.toLocaleString()}
                 desc={stat.desc}
+                error={stat.error}
               />
             ))}
           </div>

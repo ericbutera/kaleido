@@ -1,6 +1,7 @@
 pub mod aggregator;
 pub mod api_metrics;
 pub mod auth_metrics;
+pub mod background_task_metrics;
 pub mod cooldown;
 pub mod data;
 pub mod email;
