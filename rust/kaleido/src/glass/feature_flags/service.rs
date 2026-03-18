@@ -25,12 +25,17 @@ impl FeatureFlagService {
             .all(db)
             .await?;
 
+        let mut cache = self.cache.write().unwrap();
+        cache.clear();
+
+        if flags.is_empty() {
+            return Ok(());
+        }
+
         // Prefer provider evaluation when available. Fall back to DB value on error.
         let api = OpenFeature::singleton().await;
         let client = api.create_client();
 
-        let mut cache = self.cache.write().unwrap();
-        cache.clear();
         for flag in flags {
             let provider_val = client
                 .get_bool_value(&flag.feature_key, None, None)
