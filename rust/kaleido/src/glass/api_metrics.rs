@@ -29,10 +29,10 @@ use axum::http::header::CONTENT_TYPE;
 use axum::http::Request;
 use axum::middleware::Next;
 use axum::response::Response;
-use std::sync::OnceLock;
 use prometheus::{
     Encoder, HistogramOpts, HistogramVec, IntCounter, IntCounterVec, Opts, Registry, TextEncoder,
 };
+use std::sync::OnceLock;
 use std::time::Instant;
 
 static REGISTRY: OnceLock<Registry> = OnceLock::new();
@@ -53,8 +53,6 @@ fn expect_init() -> &'static Registry {
         .expect("glass api_metrics not initialized; call init_api_metrics() at startup")
 }
 
-// ── Public accessors ──────────────────────────────────────────────────────────
-
 /// The shared metrics `Registry`.  Use this to register app-specific counters
 /// after calling `init_api_metrics`.
 pub fn registry() -> &'static Registry {
@@ -62,7 +60,9 @@ pub fn registry() -> &'static Registry {
 }
 
 pub fn login_counter() -> &'static IntCounter {
-    LOGIN_COUNTER.get().expect("glass api_metrics not initialized")
+    LOGIN_COUNTER
+        .get()
+        .expect("glass api_metrics not initialized")
 }
 
 pub fn failed_login_counter() -> &'static IntCounter {
@@ -72,7 +72,9 @@ pub fn failed_login_counter() -> &'static IntCounter {
 }
 
 pub fn logout_counter() -> &'static IntCounter {
-    LOGOUT_COUNTER.get().expect("glass api_metrics not initialized")
+    LOGOUT_COUNTER
+        .get()
+        .expect("glass api_metrics not initialized")
 }
 
 pub fn token_refresh_counter() -> &'static IntCounter {
@@ -92,8 +94,6 @@ pub fn tasks_enqueued() -> &'static IntCounterVec {
         .get()
         .expect("glass api_metrics not initialized")
 }
-
-// ── Initialization ────────────────────────────────────────────────────────────
 
 /// Initialize the shared API metrics registry with the given namespace prefix.
 ///
@@ -177,9 +177,13 @@ pub fn init_api_metrics(namespace: &str) {
     );
 
     {
-        let opts =
-            HistogramOpts::new("request_duration_seconds", "HTTP request latencies in seconds")
-                .buckets(vec![0.005, 0.01, 0.025, 0.05, 0.1, 0.25, 0.5, 1.0, 2.5, 5.0]);
+        let opts = HistogramOpts::new(
+            "request_duration_seconds",
+            "HTTP request latencies in seconds",
+        )
+        .buckets(vec![
+            0.005, 0.01, 0.025, 0.05, 0.1, 0.25, 0.5, 1.0, 2.5, 5.0,
+        ]);
         let v = HistogramVec::new(opts, &["method", "path", "status"])
             .expect("failed to create request_duration_seconds");
         registry
@@ -210,8 +214,6 @@ pub fn init_api_metrics(namespace: &str) {
         .with_label_values(&["GET", "/health", "200"])
         .observe(0.0);
 }
-
-// ── Axum helpers ──────────────────────────────────────────────────────────────
 
 /// Axum middleware that records HTTP request counts and latencies.
 ///

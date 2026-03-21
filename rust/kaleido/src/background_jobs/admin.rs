@@ -57,8 +57,6 @@ where
         .route("/:id", get(get_task::<S, A>))
 }
 
-// ── Error ─────────────────────────────────────────────────────────────────────
-
 #[derive(Debug)]
 struct AdminTaskError {
     code: StatusCode,
@@ -89,8 +87,6 @@ impl IntoResponse for AdminTaskError {
         (self.code, body).into_response()
     }
 }
-
-// ── Query / Response types ────────────────────────────────────────────────────
 
 #[derive(Debug, Deserialize)]
 pub struct TaskListQuery {
@@ -214,8 +210,6 @@ impl From<background_tasks::Model> for TaskDetailResponse {
         }
     }
 }
-
-// ── Handlers ──────────────────────────────────────────────────────────────────
 
 async fn list_tasks<S, A>(
     _admin: A,

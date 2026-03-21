@@ -378,8 +378,6 @@ impl CooldownManager for ClosureCooldownManager {
     }
 }
 
-// ── SeaORM cooldown backend ──────────────────────────────────────────────────
-
 /// A ready-made [`CooldownBackend`] backed by SeaORM.
 /// Stores all auth cooldown records in the `cooldowns` table under the
 /// `"auth"` subject type with an action derived from [`CooldownType`].
@@ -527,8 +525,6 @@ where
     )
 }
 
-// ── SeaORM audit logger ───────────────────────────────────────────────────────
-
 #[derive(Clone)]
 pub struct SeaOrmAuditLogger {
     db: Arc<DatabaseConnection>,
@@ -554,7 +550,9 @@ impl crate::auth::traits::AuditLogger for SeaOrmAuditLogger {
             crate::auth::traits::AuthEventType::LoginFailed => {
                 crate::auth::entities::auth_events::EventType::LoginFailed
             }
-            crate::auth::traits::AuthEventType::Logout => crate::auth::entities::auth_events::EventType::Logout,
+            crate::auth::traits::AuthEventType::Logout => {
+                crate::auth::entities::auth_events::EventType::Logout
+            }
             crate::auth::traits::AuthEventType::TokenRefresh => {
                 crate::auth::entities::auth_events::EventType::TokenRefresh
             }
@@ -576,9 +574,13 @@ impl crate::auth::traits::AuditLogger for SeaOrmAuditLogger {
             ..Default::default()
         };
 
-        crate::auth::entities::auth_events::Model::record(&self.db, &shared_event_type, shared_payload)
-            .await
-            .map_err(|e| e.to_string())
+        crate::auth::entities::auth_events::Model::record(
+            &self.db,
+            &shared_event_type,
+            shared_payload,
+        )
+        .await
+        .map_err(|e| e.to_string())
     }
 }
 
@@ -655,8 +657,6 @@ impl crate::auth::traits::ConfigProvider for StaticConfigProvider {
     }
 }
 
-// ── AuthTaskQueue ─────────────────────────────────────────────────────────────
-
 /// A ready-made task queue for auth email tasks backed by [`crate::background_jobs::DurableStorage`].
 ///
 /// Apps that only have auth tasks can use this directly.
@@ -677,7 +677,9 @@ impl AuthTaskQueue {
 
     /// Access the underlying `crate::background_jobs::TaskQueue` (e.g. to enqueue
     /// app-specific tasks from a wrapper queue struct).
-    pub fn inner(&self) -> &crate::background_jobs::TaskQueue<crate::background_jobs::DurableStorage> {
+    pub fn inner(
+        &self,
+    ) -> &crate::background_jobs::TaskQueue<crate::background_jobs::DurableStorage> {
         &self.inner
     }
 }
@@ -712,8 +714,6 @@ impl EmailTaskDispatcher for AuthTaskQueue {
     }
 }
 
-// ── EnvConfigProvider ─────────────────────────────────────────────────────────
-
 /// A [`ConfigProvider`] that reads `FRONTEND_URL` and `JWT_SECRET` from env vars.
 /// This is the standard config provider for apps that follow the Kaleido env
 /// convention. Apps with a different env naming can still use [`StaticConfigProvider`].
@@ -746,8 +746,6 @@ impl crate::auth::traits::ConfigProvider for EnvConfigProvider {
         &self.jwt_secret
     }
 }
-
-// ── Zero-config auth service entry point ─────────────────────────────────────
 
 /// Email service wrapping [`AuthTaskQueue`].
 pub type AuthEmailService = TaskQueueEmailService<AuthTaskQueue>;
