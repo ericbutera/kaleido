@@ -8,11 +8,14 @@ pub const REFRESH_COOKIE_NAME: &str = "refresh_token";
 /// # Arguments
 /// * `token` - The refresh token value
 /// * `frontend_url` - The frontend URL to determine if connection is secure
+/// Number of seconds in 7 days — matches the refresh token TTL in the database.
+const REFRESH_COOKIE_MAX_AGE_SECS: u64 = 7 * 24 * 60 * 60;
+
 pub fn refresh_cookie_value(token: &str, frontend_url: &str) -> String {
     let secure = frontend_url.starts_with("https://");
     let mut cookie_val = format!(
-        "{}={}; HttpOnly; Path=/; SameSite=Lax;",
-        REFRESH_COOKIE_NAME, token
+        "{}={}; HttpOnly; Path=/; SameSite=Strict; Max-Age={};",
+        REFRESH_COOKIE_NAME, token, REFRESH_COOKIE_MAX_AGE_SECS
     );
     if secure {
         cookie_val.push_str(" Secure;");
@@ -27,7 +30,7 @@ pub fn refresh_cookie_value(token: &str, frontend_url: &str) -> String {
 pub fn clear_refresh_cookie_value(frontend_url: &str) -> String {
     let secure = frontend_url.starts_with("https://");
     let mut cookie_val = format!(
-        "{}=; HttpOnly; Path=/; SameSite=Lax; Max-Age=0;",
+        "{}=; HttpOnly; Path=/; SameSite=Strict; Max-Age=0;",
         REFRESH_COOKIE_NAME
     );
     if secure {
