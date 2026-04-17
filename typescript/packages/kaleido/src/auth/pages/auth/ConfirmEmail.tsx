@@ -5,7 +5,11 @@ import Layout from "../../components/auth/Layout";
 
 export default function ConfirmEmail() {
   const location = useLocation();
-  const forwardedEmail = (location.state as any).email as string;
+  const searchParams = new URLSearchParams(location.search);
+  const forwardedEmail = ((location.state as { email?: string } | null)
+    ?.email ??
+    searchParams.get("email") ??
+    "") as string;
 
   return (
     <Layout>
@@ -15,9 +19,17 @@ export default function ConfirmEmail() {
       </h2>
 
       <div className="mt-4 text-sm text-center">
-        <p>
-          We've sent a confirmation link to <strong>{forwardedEmail}</strong>.
-        </p>
+        {forwardedEmail ? (
+          <p>
+            We&apos;ve sent a confirmation link to{" "}
+            <strong>{forwardedEmail}</strong>.
+          </p>
+        ) : (
+          <p>
+            If your registration succeeded, we&apos;ve sent a confirmation link
+            to your email address.
+          </p>
+        )}
         <p className="mt-2">
           Click the link in the email to activate your account.
         </p>
@@ -27,8 +39,12 @@ export default function ConfirmEmail() {
 
       <div className="join w-full justify-center">
         <Link
-          to="/resend-confirmation"
-          state={{ email: forwardedEmail }}
+          to={
+            forwardedEmail
+              ? `/resend-confirmation?email=${encodeURIComponent(forwardedEmail)}`
+              : "/resend-confirmation"
+          }
+          state={forwardedEmail ? { email: forwardedEmail } : null}
           className="btn join-item"
           title="Didn't receive the email?"
         >

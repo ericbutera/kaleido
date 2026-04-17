@@ -1,5 +1,5 @@
-use async_trait::async_trait;
 use crate::background_jobs::worker::{TaskProcessor, TaskWorker, WorkerError};
+use async_trait::async_trait;
 use handlebars::Handlebars;
 use lettre::message::{header::ContentType, Mailbox, MultiPart, SinglePart};
 use lettre::transport::smtp::authentication::Credentials;
@@ -58,12 +58,12 @@ struct AuthEmailProcessorRuntime {
 impl AuthEmailProcessorRuntime {
     fn new(config: &AuthWorkerConfig) -> Result<Self, WorkerError> {
         // Prefer a dangerous/plain builder when credentials are not provided (e.g. MailHog on 1025),
-        // otherwise use relay with credentials which enables STARTTLS.
+        // otherwise use STARTTLS for authenticated SMTP servers such as Resend on port 587.
         let mailer = if let (Some(username), Some(password)) =
             (&config.smtp.username, &config.smtp.password)
         {
-            let mut b = AsyncSmtpTransport::<Tokio1Executor>::relay(&config.smtp.host)
-                .map_err(|e| format!("failed to init SMTP relay: {}", e))?
+            let mut b = AsyncSmtpTransport::<Tokio1Executor>::starttls_relay(&config.smtp.host)
+                .map_err(|e| format!("failed to init SMTP STARTTLS relay: {}", e))?
                 .port(config.smtp.port);
             b = b.credentials(Credentials::new(username.clone(), password.clone()));
             b.build()

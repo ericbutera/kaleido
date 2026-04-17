@@ -14,6 +14,18 @@ import {
   useFeatureFlag,
 } from "../../../featureFlags";
 
+function getApiStatusCode(err: unknown): number | null {
+  return (err as { response?: { status?: number } })?.response?.status ?? null;
+}
+
+function getApiErrorMessage(err: unknown): string | null {
+  const response = (
+    err as { response?: { data?: { error?: string; message?: string } } }
+  )?.response?.data;
+
+  return response?.error ?? response?.message ?? null;
+}
+
 type SignUp = {
   email: string;
   name: string;
@@ -62,9 +74,29 @@ export default function SignUp({ redirectUrl = "" }: { redirectUrl?: string }) {
 
     try {
       await registerHook.mutateAsync(data, setError);
-      navigate("/confirm-email", { state: { email: data.email } });
+      navigate(`/confirm-email?email=${encodeURIComponent(data.email)}`);
     } catch (err) {
+      const status = getApiStatusCode(err);
+      const message = getApiErrorMessage(err);
+      const normalized = message?.toLowerCase() ?? "";
+
+      if (
+        status === 409 ||
+        normalized.includes("already") ||
+        normalized.includes("in use")
+      ) {
+        setError("email", {
+          type: "server",
+          message: "An account with this email already exists.",
+        });
+        setPageError(
+          "An account with this email already exists. Sign in instead or reset your password.",
+        );
+        return;
+      }
+
       handleFormError(err, setError, "Failed to register account", false);
+      setPageError(message ?? "Failed to register account");
     }
   };
 
