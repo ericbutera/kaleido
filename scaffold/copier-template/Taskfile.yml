@@ -4,27 +4,6 @@ vars:
   PROJECT_NAME: "[[ project_slug ]]"
 
 tasks:
-  ui:deps:
-    dir: ui
-    deps: [ui:npm-install]
-    status:
-      - test -f ui/package.json
-
-  ui:npm-install:
-    dir: ui
-    cmds:
-      - pnpm install
-    status:
-      - test -f ui/package.json
-
-  ui:dev:
-    dir: ui
-    deps: [ui:deps]
-    cmds:
-      - pnpm run dev
-    status:
-      - test -f ui/package.json
-
   ui-next:deps:
     dir: ui-next
     cmds:
@@ -76,5 +55,5 @@ tasks:
           fi
           sleep 2
         done
-      - npx openapi-typescript /tmp/openapi.json --output ui/src/lib/openapi/react-query/api.d.ts
+      - npx openapi-typescript /tmp/openapi.json --output ui-next/lib/openapi/react-query/api.d.ts
       - rm -f /tmp/openapi.json

@@ -7,9 +7,18 @@ Generated project layout:
 - `api`
 - `migration`
 - `worker`
-- `ui` (React/Vite) and/or `ui-next` (Next.js)
+- `ui-next` (Next.js)
 - Production and dev Dockerfiles for runtime services
 - `.tool-versions` for asdf-managed external tools
+
+Generated projects are expected to use `task` as the human-facing command runner:
+
+```sh
+task dev
+task ui-next:dev
+task api:dev
+task worker:dev
+```
 
 ## Copier usage (recommended)
 

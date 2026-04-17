@@ -2,7 +2,26 @@
 
 A multi-language monorepo for shared components across SaaS applications.
 
+## Quickstart
+
+Use the workspace task surface as the human-facing entrypoint:
+
+```sh
+task kaleido:build
+task kaleido:typecheck
+task kaleido:version
+```
+
+Release through task wrappers instead of publishing by hand:
+
+```sh
+task kaleido:release:patch
+task kaleido:release:patch:upgrade
+```
+
 ## Language-Specific Workspaces
+
+When you need lower-level debugging or package work, use the language workspaces directly.
 
 ### Rust Workspace
 
@@ -16,8 +35,8 @@ cargo test
 
 ```bash
 cd typescript
-npm install
-npm run build
+pnpm install
+pnpm build
 ```
 
 ## Packages
@@ -34,6 +53,8 @@ npm run build
 
 ## Publishing
 
+Normal publish flow should go through the workspace `task` commands above.
+
 ### Rust Crates
 
 ```bash
@@ -44,8 +65,8 @@ cargo publish
 ### npm Packages
 
 ```bash
-cd typescript/auth-ui
-npm publish --access public
+cd typescript/packages/kaleido
+pnpm publish --access public
 ```
 
 ## Development
