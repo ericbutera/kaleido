@@ -20,6 +20,11 @@ task api:dev
 task worker:dev
 ```
 
+## ui-next runtime config
+
+Generated `ui-next` apps should read deploy-time hostnames from runtime `API_URL` and `CDN_URL` env vars, injected by the server container.
+Do not use `NEXT_PUBLIC_*` for production API hosts; Next.js bakes those values into the client bundle at build time, which can leak `localhost` into deployed apps.
+
 ## Copier usage (recommended)
 
 Install Copier:
