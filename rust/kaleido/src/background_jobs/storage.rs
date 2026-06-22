@@ -7,6 +7,7 @@ use serde::{Deserialize, Serialize};
 pub enum TaskStatus {
     Pending,
     Processing,
+    Canceled,
     Completed,
     Failed,
 }
@@ -16,6 +17,7 @@ impl TaskStatus {
         match self {
             TaskStatus::Pending => "pending",
             TaskStatus::Processing => "processing",
+            TaskStatus::Canceled => "canceled",
             TaskStatus::Completed => "completed",
             TaskStatus::Failed => "failed",
         }
@@ -25,6 +27,7 @@ impl TaskStatus {
         match s {
             "pending" => Some(TaskStatus::Pending),
             "processing" => Some(TaskStatus::Processing),
+            "canceled" => Some(TaskStatus::Canceled),
             "completed" => Some(TaskStatus::Completed),
             "failed" => Some(TaskStatus::Failed),
             _ => None,

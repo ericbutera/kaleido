@@ -26,6 +26,8 @@ export interface FeatureFlagsOpenApiMapping {
 export interface TasksOpenApiMapping {
   listPath: string;
   detailPath: string;
+  rerunPath: string;
+  cancelPath: string;
 }
 
 export interface UsersOpenApiMapping {
@@ -120,6 +122,8 @@ function buildTasksConfig(options: CreateKaleidoOpenApiAdaptersOptions) {
   const mapping: TasksOpenApiMapping = {
     listPath: options.tasks?.listPath ?? "/admin/tasks",
     detailPath: options.tasks?.detailPath ?? "/admin/tasks/{id}",
+    rerunPath: options.tasks?.rerunPath ?? "/admin/tasks/{id}/rerun",
+    cancelPath: options.tasks?.cancelPath ?? "/admin/tasks/{id}/cancel",
   };
 
   return {
@@ -132,10 +136,8 @@ function buildTasksConfig(options: CreateKaleidoOpenApiAdaptersOptions) {
             error: params?.q ?? undefined,
             from_date: params?.from_date ?? undefined,
             to_date: params?.to_date ?? undefined,
-            pagination: {
-              page: params?.page ?? 1,
-              per_page: params?.per_page ?? 20,
-            },
+            page: params?.page ?? 1,
+            per_page: params?.per_page ?? 20,
           },
         },
         options: { enabled: true, retry: 0 },
@@ -165,6 +167,54 @@ function buildTasksConfig(options: CreateKaleidoOpenApiAdaptersOptions) {
       return {
         data: response.data ?? null,
         isLoading: response.isLoading,
+      };
+    },
+    useRerunTask: () => {
+      const queryClient = options.useQueryClient();
+      const mutation = (options.api.useMutation as any)(
+        "post",
+        mapping.rerunPath,
+      );
+
+      return {
+        mutateAsync: async ({ id }: { id: string | number }) => {
+          const result = await mutation.mutateAsync({
+            params: { path: { id: Number(id) } },
+          });
+          queryClient.invalidateQueries({
+            queryKey: ["get", mapping.listPath],
+          });
+          queryClient.invalidateQueries({
+            queryKey: ["get", mapping.detailPath],
+          });
+          options.toast?.success?.(`Task ${id} queued again`);
+          return result;
+        },
+        isPending: mutation.isPending,
+      };
+    },
+    useCancelTask: () => {
+      const queryClient = options.useQueryClient();
+      const mutation = (options.api.useMutation as any)(
+        "post",
+        mapping.cancelPath,
+      );
+
+      return {
+        mutateAsync: async ({ id }: { id: string | number }) => {
+          const result = await mutation.mutateAsync({
+            params: { path: { id: Number(id) } },
+          });
+          queryClient.invalidateQueries({
+            queryKey: ["get", mapping.listPath],
+          });
+          queryClient.invalidateQueries({
+            queryKey: ["get", mapping.detailPath],
+          });
+          options.toast?.success?.(`Task ${id} canceled`);
+          return result;
+        },
+        isPending: mutation.isPending,
       };
     },
   };
