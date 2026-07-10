@@ -8,8 +8,8 @@ use crate::background_jobs::storage::{TaskRecord, TaskStatus, TaskStorage};
 use async_trait::async_trait;
 use chrono::Utc;
 use sea_orm::{
-    ActiveModelTrait, ColumnTrait, Condition, DatabaseConnection, EntityTrait, NotSet,
-    QueryFilter, QueryOrder, QuerySelect, Set,
+    ActiveModelTrait, ColumnTrait, Condition, DatabaseConnection, EntityTrait, NotSet, QueryFilter,
+    QueryOrder, QuerySelect, Set,
 };
 
 // Re-export the background_tasks entity

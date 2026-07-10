@@ -92,9 +92,13 @@ impl WorkerMetrics {
 
     pub fn warmup_task_types(&self, task_types: &[&str]) {
         for task_type in task_types {
-            self.tasks_completed.with_label_values(&[*task_type]).inc_by(0);
+            self.tasks_completed
+                .with_label_values(&[*task_type])
+                .inc_by(0);
             self.tasks_failed.with_label_values(&[*task_type]).inc_by(0);
-            self.task_invocations.with_label_values(&[*task_type]).inc_by(0);
+            self.task_invocations
+                .with_label_values(&[*task_type])
+                .inc_by(0);
             self.task_processing_lag
                 .with_label_values(&[*task_type])
                 .observe(0.0);

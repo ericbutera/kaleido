@@ -70,7 +70,8 @@ impl Model {
             .await
             .map_err(|e| AuthError::from(e))?;
 
-        let user = user_opt.ok_or_else(|| AuthError::validation("Invalid or expired reset token"))?;
+        let user =
+            user_opt.ok_or_else(|| AuthError::validation("Invalid or expired reset token"))?;
 
         let sent_at = user
             .reset_sent_at

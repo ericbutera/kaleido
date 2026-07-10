@@ -43,18 +43,18 @@ pub struct EmailService {
 
 impl EmailService {
     pub fn new(config: &SmtpConfig) -> Result<Self, Box<dyn Error + Send + Sync>> {
-        let transport = if let (Some(username), Some(password)) = (&config.username, &config.password)
-        {
-            let credentials = Credentials::new(username.clone(), password.clone());
-            SmtpTransport::starttls_relay(&config.host)?
-                .port(config.port)
-                .credentials(credentials)
-                .build()
-        } else {
-            SmtpTransport::builder_dangerous(&config.host)
-                .port(config.port)
-                .build()
-        };
+        let transport =
+            if let (Some(username), Some(password)) = (&config.username, &config.password) {
+                let credentials = Credentials::new(username.clone(), password.clone());
+                SmtpTransport::starttls_relay(&config.host)?
+                    .port(config.port)
+                    .credentials(credentials)
+                    .build()
+            } else {
+                SmtpTransport::builder_dangerous(&config.host)
+                    .port(config.port)
+                    .build()
+            };
 
         Ok(Self {
             transport,

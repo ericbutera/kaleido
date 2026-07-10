@@ -6,7 +6,9 @@ use crate::auth::services::{
     AuthService, ForgotPasswordRequest, LoginRequest, RegisterRequest, RegisterResponse,
     ResendConfirmationRequest, ResetPasswordRequest, UserResponse,
 };
-use crate::auth::traits::{AuditLogger, ConfigProvider, CooldownManager, EmailService, MetricsRecorder};
+use crate::auth::traits::{
+    AuditLogger, ConfigProvider, CooldownManager, EmailService, MetricsRecorder,
+};
 use axum::body::Body;
 use axum::body::Bytes;
 use axum::extract::{Path, State};

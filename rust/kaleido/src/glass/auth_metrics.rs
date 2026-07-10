@@ -1,5 +1,5 @@
-use crate::glass::aggregator::{Aggregator, NamedStat, StatResult};
 use crate::auth::entities::{auth_events, refresh_tokens, users};
+use crate::glass::aggregator::{Aggregator, NamedStat, StatResult};
 use sea_orm::DatabaseConnection;
 use serde::Serialize;
 use utoipa::ToSchema;

@@ -1,5 +1,5 @@
 use crate::background_jobs::error::TaskError;
-use crate::background_jobs::storage::{TaskStorage, TaskRecord};
+use crate::background_jobs::storage::{TaskRecord, TaskStorage};
 use chrono::Utc;
 use std::sync::Arc;
 use tracing::debug;

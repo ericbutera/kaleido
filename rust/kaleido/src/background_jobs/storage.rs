@@ -65,13 +65,22 @@ pub trait TaskStorage: Send + Sync {
     ) -> Result<TaskRecord, crate::background_jobs::error::TaskError>;
 
     /// Find pending tasks ready to be processed
-    async fn find_pending(&self, limit: usize) -> Result<Vec<TaskRecord>, crate::background_jobs::error::TaskError>;
+    async fn find_pending(
+        &self,
+        limit: usize,
+    ) -> Result<Vec<TaskRecord>, crate::background_jobs::error::TaskError>;
 
     /// Mark task as processing
-    async fn mark_processing(&self, id: &str) -> Result<TaskRecord, crate::background_jobs::error::TaskError>;
+    async fn mark_processing(
+        &self,
+        id: &str,
+    ) -> Result<TaskRecord, crate::background_jobs::error::TaskError>;
 
     /// Mark task as completed
-    async fn mark_completed(&self, id: &str) -> Result<TaskRecord, crate::background_jobs::error::TaskError>;
+    async fn mark_completed(
+        &self,
+        id: &str,
+    ) -> Result<TaskRecord, crate::background_jobs::error::TaskError>;
 
     /// Mark task as failed
     async fn mark_failed(
@@ -81,5 +90,8 @@ pub trait TaskStorage: Send + Sync {
     ) -> Result<TaskRecord, crate::background_jobs::error::TaskError>;
 
     /// Get task by ID
-    async fn get_task(&self, id: &str) -> Result<Option<TaskRecord>, crate::background_jobs::error::TaskError>;
+    async fn get_task(
+        &self,
+        id: &str,
+    ) -> Result<Option<TaskRecord>, crate::background_jobs::error::TaskError>;
 }

@@ -268,7 +268,9 @@ where
         .await?
         .ok_or_else(|| AuthError::entity_not_found("User not found"))?;
 
-    Ok(Json(serde_json::json!({ "message": "confirmation email queued" })))
+    Ok(Json(
+        serde_json::json!({ "message": "confirmation email queued" }),
+    ))
 }
 
 #[utoipa::path(
@@ -297,5 +299,7 @@ where
         .await?
         .ok_or_else(|| AuthError::entity_not_found("User not found"))?;
 
-    Ok(Json(serde_json::json!({ "message": "password reset email queued" })))
+    Ok(Json(
+        serde_json::json!({ "message": "password reset email queued" }),
+    ))
 }

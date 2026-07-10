@@ -142,12 +142,7 @@ mod tests {
         let storage = InMemoryStorage::new();
 
         let task = storage
-            .enqueue(
-                "test_task".to_string(),
-                json!({"foo": "bar"}),
-                None,
-                3,
-            )
+            .enqueue("test_task".to_string(), json!({"foo": "bar"}), None, 3)
             .await
             .unwrap();
 
@@ -165,12 +160,7 @@ mod tests {
         let storage = InMemoryStorage::new();
 
         let task = storage
-            .enqueue(
-                "test_task".to_string(),
-                json!({"foo": "bar"}),
-                None,
-                3,
-            )
+            .enqueue("test_task".to_string(), json!({"foo": "bar"}), None, 3)
             .await
             .unwrap();
 
@@ -185,12 +175,7 @@ mod tests {
         let storage = InMemoryStorage::new();
 
         let task = storage
-            .enqueue(
-                "test_task".to_string(),
-                json!({"foo": "bar"}),
-                None,
-                3,
-            )
+            .enqueue("test_task".to_string(), json!({"foo": "bar"}), None, 3)
             .await
             .unwrap();
 
@@ -206,12 +191,7 @@ mod tests {
         let storage = InMemoryStorage::new();
 
         let task = storage
-            .enqueue(
-                "test_task".to_string(),
-                json!({"foo": "bar"}),
-                None,
-                3,
-            )
+            .enqueue("test_task".to_string(), json!({"foo": "bar"}), None, 3)
             .await
             .unwrap();
 
@@ -231,12 +211,7 @@ mod tests {
         let storage = InMemoryStorage::new();
 
         let task = storage
-            .enqueue(
-                "test_task".to_string(),
-                json!({"foo": "bar"}),
-                None,
-                1,
-            )
+            .enqueue("test_task".to_string(), json!({"foo": "bar"}), None, 1)
             .await
             .unwrap();
 

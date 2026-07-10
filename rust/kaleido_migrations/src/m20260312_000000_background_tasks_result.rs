@@ -10,9 +10,7 @@ impl MigrationTrait for Migration {
             .alter_table(
                 Table::alter()
                     .table(BackgroundTasks::Table)
-                    .add_column_if_not_exists(
-                        ColumnDef::new(BackgroundTasks::Result).text().null(),
-                    )
+                    .add_column_if_not_exists(ColumnDef::new(BackgroundTasks::Result).text().null())
                     .to_owned(),
             )
             .await

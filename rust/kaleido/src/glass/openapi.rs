@@ -7,14 +7,18 @@ pub mod paths {
     pub use crate::glass::metrics_controller::get_metrics;
 
     // expose utoipa marker types for the paths
-    pub use crate::glass::feature_flags::admin_controller::{__path_list_flags, __path_update_flag};
+    pub use crate::glass::feature_flags::admin_controller::{
+        __path_list_flags, __path_update_flag,
+    };
     pub use crate::glass::feature_flags::controller::__path_public_flags;
     pub use crate::glass::metrics_controller::__path_get_metrics;
 }
 
 pub mod schemas {
     pub use crate::glass::data::pagination::PaginatedResponse;
-    pub use crate::glass::feature_flags::admin_controller::{FeatureFlagResponse, UpdateFlagRequest};
+    pub use crate::glass::feature_flags::admin_controller::{
+        FeatureFlagResponse, UpdateFlagRequest,
+    };
     pub use crate::glass::feature_flags::controller::PublicFlagResponse;
     pub use crate::glass::system_metrics::SystemMetrics;
 }

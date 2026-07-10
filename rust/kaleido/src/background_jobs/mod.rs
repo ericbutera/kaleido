@@ -14,9 +14,9 @@ pub mod queue;
 pub mod storage;
 pub mod task;
 
+pub mod admin;
 pub mod durable;
 pub mod worker;
-pub mod admin;
 
 pub use entities::background_tasks;
 pub use error::TaskError;

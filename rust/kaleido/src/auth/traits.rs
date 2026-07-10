@@ -9,12 +9,7 @@ use async_trait::async_trait;
 #[async_trait]
 pub trait EmailService: Send + Sync + Clone {
     /// Send registration confirmation email
-    async fn send_registration_email(
-        &self,
-        email: String,
-        name: String,
-        verification_url: String,
-    );
+    async fn send_registration_email(&self, email: String, name: String, verification_url: String);
 
     /// Send password reset email
     async fn send_password_reset_email(
@@ -30,16 +25,32 @@ pub trait EmailService: Send + Sync + Clone {
 #[async_trait]
 pub trait CooldownManager: Send + Sync + Clone {
     /// Check if action is allowed (not in cooldown)
-    async fn check_cooldown(&self, cooldown_type: CooldownType, user_id: Option<i32>) -> Result<(), CooldownError>;
+    async fn check_cooldown(
+        &self,
+        cooldown_type: CooldownType,
+        user_id: Option<i32>,
+    ) -> Result<(), CooldownError>;
 
     /// Update cooldown timestamp after action
-    async fn update_cooldown(&self, cooldown_type: CooldownType, user_id: Option<i32>) -> Result<(), CooldownError>;
+    async fn update_cooldown(
+        &self,
+        cooldown_type: CooldownType,
+        user_id: Option<i32>,
+    ) -> Result<(), CooldownError>;
 
     /// Record a failed attempt
-    async fn record_failure(&self, cooldown_type: CooldownType, user_id: Option<i32>) -> Result<(), CooldownError>;
+    async fn record_failure(
+        &self,
+        cooldown_type: CooldownType,
+        user_id: Option<i32>,
+    ) -> Result<(), CooldownError>;
 
     /// Reset cooldown (after successful action)
-    async fn reset_cooldown(&self, cooldown_type: CooldownType, user_id: Option<i32>) -> Result<(), CooldownError>;
+    async fn reset_cooldown(
+        &self,
+        cooldown_type: CooldownType,
+        user_id: Option<i32>,
+    ) -> Result<(), CooldownError>;
 }
 
 #[derive(Debug, Clone, Copy)]
@@ -59,7 +70,11 @@ pub struct CooldownError {
 #[async_trait]
 pub trait AuditLogger: Send + Sync + Clone {
     /// Log an authentication event
-    async fn log_event(&self, event_type: AuthEventType, payload: AuthEventPayload) -> Result<(), String>;
+    async fn log_event(
+        &self,
+        event_type: AuthEventType,
+        payload: AuthEventPayload,
+    ) -> Result<(), String>;
 }
 
 #[derive(Debug, Clone)]

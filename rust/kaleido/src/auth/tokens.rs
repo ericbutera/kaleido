@@ -85,10 +85,7 @@ pub fn generate_refresh_token() -> (String, i64) {
     (token, exp)
 }
 
-pub fn verify_access_token(
-    token: &str,
-    secret: &str,
-) -> Result<TokenData<Claims>, AuthError> {
+pub fn verify_access_token(token: &str, secret: &str) -> Result<TokenData<Claims>, AuthError> {
     let validation = Validation::default();
     let td = decode::<Claims>(
         token,
