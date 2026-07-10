@@ -1,11 +1,12 @@
+use crate::background_jobs::background_tasks;
 use crate::background_jobs::worker::metrics::WorkerMetrics;
 use crate::background_jobs::worker::processor::TaskProcessor;
-use crate::background_jobs::background_tasks;
+use crate::background_jobs::worker::startup::WorkerStartupHook;
 use sea_orm::DatabaseConnection;
 use std::collections::HashMap;
 use std::sync::Arc;
 use std::time::Duration;
-use tracing::{debug, error};
+use tracing::{debug, error, info, warn};
 
 pub type WorkerError = Box<dyn std::error::Error + Send + Sync>;
 
@@ -14,6 +15,7 @@ pub struct TaskWorker {
     batch_size: u64,
     poll_interval: Duration,
     processors: HashMap<String, Arc<dyn TaskProcessor>>,
+    startup_hooks: Vec<Arc<dyn WorkerStartupHook>>,
     metrics: Option<Arc<WorkerMetrics>>,
 }
 
@@ -24,6 +26,7 @@ impl TaskWorker {
             batch_size: 10,
             poll_interval: Duration::from_secs(1),
             processors: HashMap::new(),
+            startup_hooks: Vec::new(),
             metrics: None,
         }
     }
@@ -49,17 +52,25 @@ impl TaskWorker {
         self
     }
 
+    pub fn register_startup_hook(mut self, hook: Arc<dyn WorkerStartupHook>) -> Self {
+        self.startup_hooks.push(hook);
+        self
+    }
+
     pub fn registered_task_types(&self) -> Vec<String> {
         self.processors.keys().cloned().collect()
     }
 
     pub async fn run(self) {
         debug!(
-            "Task worker started (batch_size={}, poll_interval={:?}, processors={})",
+            "Task worker started (batch_size={}, poll_interval={:?}, processors={}, startup_hooks={})",
             self.batch_size,
             self.poll_interval,
-            self.processors.len()
+            self.processors.len(),
+            self.startup_hooks.len()
         );
+
+        self.run_startup_hooks().await;
 
         let mut current_interval = self.poll_interval;
         let max_backoff = Duration::from_secs(60);
@@ -95,6 +106,7 @@ impl TaskWorker {
     async fn process_batch(&self) -> Result<usize, WorkerError> {
         let tasks = background_tasks::Model::find_pending(&self.db, self.batch_size).await?;
         let count = tasks.len();
+        debug!(count, "Found pending task batch");
 
         for task_model in tasks {
             if let Err(worker_error) = self.process_task(task_model).await {
@@ -107,22 +119,34 @@ impl TaskWorker {
 
     async fn process_task(&self, task_model: background_tasks::Model) -> Result<(), WorkerError> {
         let task_type = task_model.task_type.as_str();
+        let task_id = task_model.id;
+        info!(task_id, task_type, "Starting background task");
 
         if let Some(metrics) = &self.metrics {
             metrics.record_invocation(task_type);
-            let lag_seconds = (chrono::Utc::now() - task_model.created_at).num_milliseconds() as f64 / 1000.0;
+            let lag_seconds =
+                (chrono::Utc::now() - task_model.created_at).num_milliseconds() as f64 / 1000.0;
             metrics.record_processing_lag(task_type, lag_seconds);
         }
 
         let task_model = task_model.mark_processing(&self.db).await?;
         let started_at = std::time::Instant::now();
+        let heartbeat = spawn_processing_heartbeat(
+            self.db.clone(),
+            task_model.id,
+            task_model.task_type.clone(),
+            Duration::from_secs(30),
+        );
 
         let result = match self.processors.get(task_type) {
-            Some(processor) => processor
-                .process(task_model.id, task_model.payload.clone())
-                .await,
+            Some(processor) => {
+                processor
+                    .process(task_model.id, task_model.payload.clone())
+                    .await
+            }
             None => Err(format!("No processor registered for task type: {}", task_type).into()),
         };
+        heartbeat.abort();
 
         if let Some(metrics) = &self.metrics {
             metrics.record_duration(task_type, started_at.elapsed().as_secs_f64());
@@ -131,14 +155,17 @@ impl TaskWorker {
         match result {
             Ok(()) => {
                 task_model.mark_completed(&self.db).await?;
+                info!(task_id, task_type, "Completed background task");
                 if let Some(metrics) = &self.metrics {
                     metrics.record_completed(task_type);
                 }
             }
             Err(process_error) => {
+                let error_message = process_error.to_string();
                 task_model
-                    .mark_failed(&self.db, process_error.to_string())
+                    .mark_failed(&self.db, error_message.clone())
                     .await?;
+                warn!(task_id, task_type, error = %error_message, "Failed background task");
                 if let Some(metrics) = &self.metrics {
                     metrics.record_failed(task_type);
                 }
@@ -147,4 +174,44 @@ impl TaskWorker {
 
         Ok(())
     }
+
+    async fn run_startup_hooks(&self) {
+        for hook in &self.startup_hooks {
+            let hook_name = hook.name();
+            info!(hook = hook_name, "Running worker startup hook");
+
+            match hook.run(&self.db).await {
+                Ok(()) => info!(hook = hook_name, "Completed worker startup hook"),
+                Err(worker_error) => {
+                    error!(hook = hook_name, %worker_error, "Worker startup hook failed")
+                }
+            }
+        }
+    }
+}
+
+fn spawn_processing_heartbeat(
+    db: DatabaseConnection,
+    task_id: i32,
+    task_type: String,
+    interval: Duration,
+) -> tokio::task::JoinHandle<()> {
+    tokio::spawn(async move {
+        let mut ticker = tokio::time::interval(interval);
+
+        loop {
+            ticker.tick().await;
+            match background_tasks::Model::mark_processing_heartbeat(&db, task_id).await {
+                Ok(Some(task))
+                    if task.status == background_tasks::TaskStatus::Processing.as_str() =>
+                {
+                    debug!(task_id, task_type, "Recorded background task heartbeat");
+                }
+                Ok(_) => break,
+                Err(error) => {
+                    warn!(task_id, task_type, %error, "Failed to record background task heartbeat");
+                }
+            }
+        }
+    })
 }

@@ -85,6 +85,24 @@ impl Model {
         active.update(db).await
     }
 
+    /// Refresh updated_at for a task that is still actively processing.
+    pub async fn mark_processing_heartbeat(
+        db: &DatabaseConnection,
+        id: i32,
+    ) -> Result<Option<Model>, DbErr> {
+        let Some(task) = Entity::find_by_id(id).one(db).await? else {
+            return Ok(None);
+        };
+
+        if task.status != TaskStatus::Processing.as_str() {
+            return Ok(Some(task));
+        }
+
+        let mut active: ActiveModel = task.into();
+        active.updated_at = Set(Utc::now());
+        active.update(db).await.map(Some)
+    }
+
     /// Mark task as completed
     pub async fn mark_completed(&self, db: &DatabaseConnection) -> Result<Model, DbErr> {
         self.mark_completed_with_result(db, None).await
