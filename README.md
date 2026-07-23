@@ -4,19 +4,39 @@ A multi-language monorepo for shared components across SaaS applications.
 
 ## Quickstart
 
-Use the workspace task surface as the human-facing entrypoint:
+Use the repo Taskfile as the human-facing entrypoint:
 
 ```sh
-task kaleido:build
-task kaleido:typecheck
-task kaleido:version
+task build
+task typecheck
+task version
 ```
 
-Release through task wrappers instead of publishing by hand:
+Release through guarded task wrappers instead of publishing by hand:
 
 ```sh
-task kaleido:release:patch
-task kaleido:release:patch:upgrade
+task release:status
+task release:patch
+task release:minor
+task release:major
+```
+
+The release task fetches `origin/main` and tags, requires a clean `main`
+branch, runs package checks, asks you to type the computed tag, creates the
+version commit and tag, then pushes them atomically. If you rerun the command
+while `HEAD` is already a pushed release tag, it exits without bumping again.
+
+Consumer apps are updated from their own repos:
+
+```sh
+cd ../mycorner-axum
+VERSION=0.7.0 task kaleido:upgrade
+
+cd ../rss
+VERSION=0.7.0 task kaleido:upgrade
+
+cd ../bike
+VERSION=0.7.0 task kaleido:upgrade
 ```
 
 ## Language-Specific Workspaces
@@ -53,7 +73,7 @@ pnpm build
 
 ## Publishing
 
-Normal publish flow should go through the workspace `task` commands above.
+Normal publish flow should go through the repo `task` commands above.
 
 ### Rust Crates
 

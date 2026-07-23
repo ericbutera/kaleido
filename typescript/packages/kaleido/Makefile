@@ -1,61 +1,26 @@
-.PHONY: help build publish-patch publish-minor publish-major test
+.PHONY: help build publish-patch publish-minor publish-major release-status test
+
+RELEASE_SCRIPT := ../../../scripts/release-npm.sh
 
 help:
 	@echo "Available targets:"
-	@echo "  build          - Build the package"
-	@echo "  publish-patch  - Bump patch version and publish (0.1.0 -> 0.1.1)"
-	@echo "  publish-minor  - Bump minor version and publish (0.1.0 -> 0.2.0)"
-	@echo "  publish-major  - Bump major version and publish (0.1.0 -> 1.0.0)"
+	@echo "  build           - Build the package"
+	@echo "  release-status  - Show current release state"
+	@echo "  publish-patch   - Create and push a guarded patch release"
+	@echo "  publish-minor   - Create and push a guarded minor release"
+	@echo "  publish-major   - Create and push a guarded major release"
 
 build:
 	pnpm run build
 
+release-status:
+	bash $(RELEASE_SCRIPT) status
+
 publish-patch:
-	@if [ -n "$(shell git status --porcelain)" ]; then \
-		echo "Working tree is dirty. Commit or stash changes before releasing." >&2; \
-		exit 1; \
-	fi
-	@echo "Bumping patch version in package.json..."
-	@node -e "const fs=require('fs');const p='package.json';const j=JSON.parse(fs.readFileSync(p));const v=j.version.split('.').map(n=>parseInt(n));v[2]= (v[2]||0)+1;j.version=v.join('.');fs.writeFileSync(p,JSON.stringify(j,null,2)+'\n');console.log('version',j.version);" \
-		; version=$$(node -p "require('./package.json').version"); \
-		echo "Version bumped to $$version"; \
-		git add package.json; \
-		git commit -m "chore(release): v$$version" || true; \
-		git tag -a "v$$version" -m "v$$version" || true; \
-		echo "Created tag v$$version"; \
-		git push origin HEAD --follow-tags
-		echo "Don't forget to update consumer package.json version."
+	bash $(RELEASE_SCRIPT) patch
 
 publish-minor:
-	@if [ -n "$(shell git status --porcelain)" ]; then \
-		echo "Working tree is dirty. Commit or stash changes before releasing." >&2; \
-		exit 1; \
-	fi
-	@echo "Bumping minor version in package.json..."
-	@node -e "const fs=require('fs');const p='package.json';const j=JSON.parse(fs.readFileSync(p));const v=j.version.split('.').map(n=>parseInt(n));v[1]=(v[1]||0)+1;v[2]=0;j.version=v.join('.');fs.writeFileSync(p,JSON.stringify(j,null,2)+'\n');console.log('version',j.version);" \
-		; version=$$(node -p "require('./package.json').version"); \
-		echo "Version bumped to $$version"; \
-		git add package.json; \
-		git commit -m "chore(release): v$$version" || true; \
-		git tag -a "v$$version" -m "v$$version" || true; \
-		echo "Created tag v$$version"; \
-		git push origin HEAD --follow-tags
-		echo "Don't forget to update consumer package.json version."
+	bash $(RELEASE_SCRIPT) minor
 
 publish-major:
-	@if [ -n "$(shell git status --porcelain)" ]; then \
-		echo "Working tree is dirty. Commit or stash changes before releasing." >&2; \
-		exit 1; \
-	fi
-	@echo "Bumping major version in package.json..."
-	@node -e "const fs=require('fs');const p='package.json';const j=JSON.parse(fs.readFileSync(p));const v=j.version.split('.').map(n=>parseInt(n));v[0]=(v[0]||0)+1;v[1]=0;v[2]=0;j.version=v.join('.');fs.writeFileSync(p,JSON.stringify(j,null,2)+'\n');console.log('version',j.version);" \
-		; version=$$(node -p "require('./package.json').version"); \
-		echo "Version bumped to $$version"; \
-		git add package.json; \
-		git commit -m "chore(release): v$$version" || true; \
-		git tag -a "v$$version" -m "v$$version" || true; \
-		echo "Created tag v$$version"; \
-		git push origin HEAD --follow-tags
-		echo "Don't forget to update consumer package.json version."
-
-
+	bash $(RELEASE_SCRIPT) major

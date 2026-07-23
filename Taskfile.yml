@@ -1,0 +1,48 @@
+version: "3"
+
+vars:
+  PACKAGE_DIR: typescript/packages/kaleido
+
+tasks:
+  default:
+    desc: Show Kaleido tasks
+    cmds:
+      - task --list
+
+  build:
+    desc: Build the Kaleido TypeScript package
+    dir: "{{.PACKAGE_DIR}}"
+    cmds:
+      - pnpm build
+
+  typecheck:
+    desc: Typecheck the Kaleido TypeScript package
+    dir: "{{.PACKAGE_DIR}}"
+    cmds:
+      - pnpm typecheck
+
+  version:
+    desc: Print the current Kaleido TypeScript package version
+    dir: "{{.PACKAGE_DIR}}"
+    cmds:
+      - node -p "require('./package.json').version"
+
+  release:status:
+    desc: Show current release state
+    cmds:
+      - bash scripts/release-npm.sh status
+
+  release:patch:
+    desc: Create and push a guarded Kaleido patch release
+    cmds:
+      - bash scripts/release-npm.sh patch
+
+  release:minor:
+    desc: Create and push a guarded Kaleido minor release
+    cmds:
+      - bash scripts/release-npm.sh minor
+
+  release:major:
+    desc: Create and push a guarded Kaleido major release
+    cmds:
+      - bash scripts/release-npm.sh major
