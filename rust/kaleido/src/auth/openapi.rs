@@ -8,7 +8,7 @@ pub mod paths {
         current, forgot_password, login, logout, refresh, register, resend_confirmation,
         reset_password, verify_email,
     };
-    pub use crate::auth::controllers::oauth::{oauth_authorize, oauth_callback};
+    pub use crate::auth::controllers::oauth::{oauth_authorize, oauth_callback, oauth_providers};
 
     // Re-export the utoipa-generated marker types so downstream `derive(OpenApi)`
     // can resolve the path markers from this module (e.g. `auth::openapi::paths::register`).
@@ -16,11 +16,15 @@ pub mod paths {
         __path_current, __path_forgot_password, __path_login, __path_logout, __path_refresh,
         __path_register, __path_resend_confirmation, __path_reset_password, __path_verify_email,
     };
-    pub use crate::auth::controllers::oauth::{__path_oauth_authorize, __path_oauth_callback};
+    pub use crate::auth::controllers::oauth::{
+        __path_oauth_authorize, __path_oauth_callback, __path_oauth_providers,
+    };
 }
 
 pub mod schemas {
     pub use crate::auth::controllers::auth::MessageResponse;
+    pub use crate::auth::controllers::oauth::OAuthProvidersResponse;
+    pub use crate::auth::services::oauth_provider_service::OAuthProviderMetadata;
     pub use crate::auth::services::{
         ForgotPasswordRequest, LoginRequest, RegisterRequest, RegisterResponse,
         ResendConfirmationRequest, ResetPasswordRequest, TokenResponse, UserResponse,

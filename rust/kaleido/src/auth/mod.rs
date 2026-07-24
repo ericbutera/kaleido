@@ -25,12 +25,13 @@ pub mod worker;
 // Re-export commonly used types
 pub use adapters::{
     build_default_auth_service, create_auth_service, AuthEmailService, AuthTaskQueue,
-    BackendCooldownManager, ClosureCooldownManager, ClosureEmailService, CooldownBackend,
-    CooldownBackendByType, DefaultAuthService, DefaultCooldownManager, DefaultEnvAuthService,
-    EmailTaskDispatcher, EnvConfigProvider, FnMetricsRecorder, MappedCooldownBackend,
-    SeaOrmAuditLogger, SeaOrmCooldownBackend, StaticConfigProvider, TaskQueueEmailService,
+    BackendCooldownManager, ClosureCooldownManager, CooldownBackend, CooldownBackendByType,
+    DefaultAuthService, DefaultCooldownManager, DefaultEnvAuthService, EmailTaskDispatcher,
+    EnvConfigProvider, FnMetricsRecorder, MappedCooldownBackend, SeaOrmAuditLogger,
+    SeaOrmCooldownBackend, StaticConfigProvider, TaskQueueEmailService,
 };
 pub use controllers::admin::routes as admin_routes;
+pub use controllers::auth::session_routes;
 pub use controllers::auth::{AuthRouteStorage, MessageResponse};
 pub use controllers::routes;
 pub use cookies::{clear_refresh_cookie_value, refresh_cookie_value, REFRESH_COOKIE_NAME};
@@ -45,14 +46,13 @@ pub use services::{
         ApiClientCredentials, ApiClientService, ClientLoginRequest, ClientLoginResponse,
         CreateApiClientRequest,
     },
-    oauth::{GoogleUserInfo, OAuthAuthorizeUrl, OAuthService},
-    oauth_provider_service::OAuthProviderService,
+    oauth::{OAuthAuthorizeUrl, OAuthService, OAuthUserInfo},
+    oauth_provider_service::{OAuthProviderMetadata, OAuthProviderService},
     provider_settings::{
-        get_provider_config, ProviderConfig, GOOGLE_AUTH_URL, GOOGLE_TOKEN_URL,
-        GOOGLE_USERINFO_URL, PROVIDER_GOOGLE,
+        env_prefix, get_provider_config, normalize_provider_id, scopes_for_provider,
+        ProviderConfig, PROVIDER_DEV,
     },
-    AuthService, ForgotPasswordRequest, LoginRequest, RegisterRequest, RegisterResponse,
-    ResendConfirmationRequest, ResetPasswordRequest, TokenResponse, UserResponse,
+    AuthService, LoginRequest, RegisterRequest, RegisterResponse, TokenResponse, UserResponse,
 };
 pub use tokens::{
     access_token_ttl_seconds, generate_access_token, generate_api_client_access_token,

@@ -106,7 +106,7 @@ impl RegisterRequest {
             email_verified_at: Set(None),
             magic_link_token: Set(None),
             magic_link_expiration: Set(None),
-            google_id: Set(None),
+            oauth_subject: Set(None),
             oauth_provider: Set(None),
             ..Default::default()
         }

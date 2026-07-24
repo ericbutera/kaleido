@@ -5,7 +5,6 @@ import { useUsers } from "../../../users/useUsers";
 import { UsersSchema, type UsersParams } from "../../params/UsersParams";
 
 interface ListProps {
-  onCreateUser: () => void;
   onSelectUser: (user: User) => void;
 }
 
@@ -17,7 +16,7 @@ function isUserVerified(user: User): boolean {
   return !!(user.verified ?? user.email_verified_at);
 }
 
-export default function List({ onCreateUser, onSelectUser }: ListProps) {
+export default function List({ onSelectUser }: ListProps) {
   const useUsersQuery = (params: UsersParams): PaginatedQueryResult<User> => {
     const { data, raw, isLoading } = useUsers(params);
     return {
@@ -72,11 +71,6 @@ export default function List({ onCreateUser, onSelectUser }: ListProps) {
   return (
     <GenericList
       title="Users"
-      actions={
-        <button className="btn btn-sm btn-primary" onClick={onCreateUser}>
-          Create User
-        </button>
-      }
       paramsSchema={UsersSchema}
       useQuery={useUsersQuery}
       columns={columns}

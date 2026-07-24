@@ -1,9 +1,9 @@
 import { createContext, useContext, type ReactNode } from "react";
-import type { AuthApiClient, AuthConfig } from "./types";
+import type { AuthApiClient, AuthConfig, ResolvedAuthConfig } from "./types";
 
 interface AuthContextValue {
   client: AuthApiClient;
-  config: Required<AuthConfig>;
+  config: ResolvedAuthConfig;
 }
 
 const AuthApiContext = createContext<AuthContextValue | null>(null);
@@ -17,13 +17,11 @@ export function AuthProvider({
   config?: AuthConfig;
   children: ReactNode;
 }) {
-  const defaultConfig: Required<AuthConfig> = {
-    oauthEnabled: false,
-    registrationEnabled: true,
-    OAuthButton: undefined as any,
+  const mergedConfig: ResolvedAuthConfig = {
+    passwordAuthEnabled: config.passwordAuthEnabled ?? true,
+    registrationEnabled: config.registrationEnabled ?? true,
+    OAuthProviderButtons: config.OAuthProviderButtons,
   };
-
-  const mergedConfig = { ...defaultConfig, ...config };
 
   return (
     <AuthApiContext.Provider value={{ client, config: mergedConfig }}>
@@ -51,7 +49,7 @@ export function useAuthApi(): AuthApiClient {
  * Hook to access the auth configuration.
  * Must be used within an AuthProvider.
  */
-export function useAuthConfig(): Required<AuthConfig> {
+export function useAuthConfig(): ResolvedAuthConfig {
   const context = useContext(AuthApiContext);
   if (!context) {
     throw new Error(

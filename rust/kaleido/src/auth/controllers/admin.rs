@@ -81,11 +81,6 @@ where
         .route("/:id", get(get_user::<S>))
         .route("/:id", patch(update_user::<S>))
         .route("/:id/disable", post(disable_user::<S>))
-        .route("/:id/resend-confirmation", post(resend_confirmation::<S>))
-        .route(
-            "/:id/resend-forgot-password",
-            post(resend_forgot_password::<S>),
-        )
 }
 
 #[utoipa::path(
@@ -240,66 +235,4 @@ where
         .ok_or_else(|| AuthError::entity_not_found("User not found"))?;
 
     Ok(Json(AdminUserResponse::from(user)))
-}
-
-#[utoipa::path(
-    post,
-    path = "/admin/users/{id}/resend-confirmation",
-    params(("id" = i32, Path, description = "User ID")),
-    responses(
-        (status = 200, description = "Confirmation email queued"),
-        (status = 403, description = "Forbidden"),
-        (status = 404, description = "User not found"),
-    ),
-    tag = "admin",
-    security(("bearer_auth" = []))
-)]
-async fn resend_confirmation<S>(
-    _admin: AdminUserContext<S>,
-    State(state): State<Arc<S>>,
-    Path(id): Path<i32>,
-) -> Result<Json<serde_json::Value>, AuthError>
-where
-    S: AuthStorage + 'static,
-{
-    let db: &DatabaseConnection = state.db();
-    let _user = users::Entity::find_by_id(id)
-        .one(db)
-        .await?
-        .ok_or_else(|| AuthError::entity_not_found("User not found"))?;
-
-    Ok(Json(
-        serde_json::json!({ "message": "confirmation email queued" }),
-    ))
-}
-
-#[utoipa::path(
-    post,
-    path = "/admin/users/{id}/resend-forgot-password",
-    params(("id" = i32, Path, description = "User ID")),
-    responses(
-        (status = 200, description = "Password reset email queued"),
-        (status = 403, description = "Forbidden"),
-        (status = 404, description = "User not found"),
-    ),
-    tag = "admin",
-    security(("bearer_auth" = []))
-)]
-async fn resend_forgot_password<S>(
-    _admin: AdminUserContext<S>,
-    State(state): State<Arc<S>>,
-    Path(id): Path<i32>,
-) -> Result<Json<serde_json::Value>, AuthError>
-where
-    S: AuthStorage + 'static,
-{
-    let db: &DatabaseConnection = state.db();
-    let _user = users::Entity::find_by_id(id)
-        .one(db)
-        .await?
-        .ok_or_else(|| AuthError::entity_not_found("User not found"))?;
-
-    Ok(Json(
-        serde_json::json!({ "message": "password reset email queued" }),
-    ))
 }

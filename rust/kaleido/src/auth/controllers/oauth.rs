@@ -1,24 +1,32 @@
 use crate::auth::cookies::refresh_cookie_value;
 use crate::auth::error::AuthError;
+use crate::auth::services::oauth::OAuthUserInfo;
+use crate::auth::services::oauth_provider_service::OAuthProviderService;
+use crate::auth::services::provider_settings::{normalize_provider_id, PROVIDER_DEV};
 use crate::auth::AuthRouteStorage;
 use crate::auth::OAuthService;
 use axum::{
     body::Body,
     extract::{Path, Query, State},
     http::StatusCode,
-    response::Redirect,
-    response::Response,
+    response::{IntoResponse, Redirect, Response},
     routing::get,
-    Router,
+    Json, Router,
 };
-use serde::Deserialize;
+use serde::{Deserialize, Serialize};
 use std::sync::Arc;
-use utoipa::IntoParams;
+use utoipa::{IntoParams, ToSchema};
 
 /// Generic storage trait for OAuth routes
 pub trait OAuthRouteStorage: AuthRouteStorage {
     fn api_url(&self) -> &str;
-    fn oauth_enabled(&self) -> bool;
+    fn oauth_enabled(&self) -> bool {
+        true
+    }
+
+    fn oauth_provider_enabled(&self, provider: &str) -> bool {
+        self.oauth_enabled() && OAuthProviderService::is_provider_enabled(provider)
+    }
 }
 
 pub fn routes<S>() -> Router<Arc<S>>
@@ -26,8 +34,38 @@ where
     S: OAuthRouteStorage,
 {
     Router::new()
+        .route("/providers", get(oauth_providers::<S>))
         .route("/:provider", get(oauth_authorize::<S>))
         .route("/:provider/callback", get(oauth_callback::<S>))
+}
+
+#[derive(Serialize, ToSchema)]
+pub struct OAuthProvidersResponse {
+    pub providers: Vec<crate::auth::services::oauth_provider_service::OAuthProviderMetadata>,
+}
+
+/// List OAuth providers enabled by environment configuration
+#[utoipa::path(
+    get,
+    path = "/oauth/providers",
+    responses(
+        (status = 200, description = "Configured OAuth providers", body = OAuthProvidersResponse)
+    ),
+    tag = "oauth"
+)]
+pub async fn oauth_providers<S>(
+    State(state): State<Arc<S>>,
+) -> Result<Json<OAuthProvidersResponse>, AuthError>
+where
+    S: OAuthRouteStorage,
+{
+    let providers = if state.oauth_enabled() {
+        OAuthProviderService::enabled_providers()
+    } else {
+        Vec::new()
+    };
+
+    Ok(Json(OAuthProvidersResponse { providers }))
 }
 
 /// Initiate provider OAuth flow - redirect user to provider login
@@ -45,18 +83,25 @@ where
 pub async fn oauth_authorize<S>(
     State(state): State<Arc<S>>,
     Path(provider): Path<String>,
-) -> Result<Redirect, AuthError>
+) -> Result<Response, AuthError>
 where
     S: OAuthRouteStorage,
 {
-    if !state.oauth_enabled() {
+    let provider = normalize_provider_id(&provider)?;
+
+    if !state.oauth_provider_enabled(&provider) {
         return Err(AuthError::forbidden("OAuth is disabled"));
     }
+
+    if provider == PROVIDER_DEV {
+        return complete_oauth_login(state, &provider, OAuthService::local_dev_user_info()).await;
+    }
+
     let auth_url = OAuthService::get_authorization_url(state.db(), &provider, state.api_url())
         .await
         .map_err(|e| AuthError::internal_error(e.to_string()))?;
     tracing::debug!(provider = %provider, auth_url = %auth_url.url, "Initiating OAuth redirect");
-    Ok(Redirect::temporary(&auth_url.url))
+    Ok(Redirect::temporary(&auth_url.url).into_response())
 }
 
 #[derive(Deserialize, IntoParams)]
@@ -83,11 +128,13 @@ pub async fn oauth_callback<S>(
     State(state): State<Arc<S>>,
     Path(provider): Path<String>,
     Query(params): Query<OAuthCallbackQuery>,
-) -> Result<impl axum::response::IntoResponse, AuthError>
+) -> Result<Response, AuthError>
 where
     S: OAuthRouteStorage,
 {
-    if !state.oauth_enabled() {
+    let provider = normalize_provider_id(&provider)?;
+
+    if !state.oauth_provider_enabled(&provider) {
         return Err(AuthError::forbidden("OAuth is disabled"));
     }
     let provider_user = OAuthService::exchange_code_and_get_user(
@@ -98,35 +145,25 @@ where
     )
     .await
     .map_err(|e| AuthError::internal_error(e.to_string()))?;
-    let user = OAuthService::find_or_create_user(state.db(), provider_user)
+
+    complete_oauth_login(state, &provider, provider_user).await
+}
+
+async fn complete_oauth_login<S>(
+    state: Arc<S>,
+    provider: &str,
+    provider_user: OAuthUserInfo,
+) -> Result<Response, AuthError>
+where
+    S: OAuthRouteStorage,
+{
+    let user = OAuthService::find_or_create_provider_user(state.db(), provider, provider_user)
         .await
         .map_err(|e| AuthError::internal_error(e.to_string()))?;
 
-    // Convert to auth entity type
-    let auth_user = crate::auth::entities::users::Model {
-        id: user.id,
-        pid: user.pid,
-        email: user.email.clone(),
-        password: user.password.clone(),
-        api_key: user.api_key.clone(),
-        name: user.name.clone(),
-        is_admin: user.is_admin,
-        reset_token: user.reset_token.clone(),
-        reset_sent_at: user.reset_sent_at,
-        email_verification_token: user.email_verification_token.clone(),
-        email_verification_sent_at: user.email_verification_sent_at,
-        email_verified_at: user.email_verified_at,
-        magic_link_token: user.magic_link_token.clone(),
-        magic_link_expiration: user.magic_link_expiration,
-        google_id: user.google_id.clone(),
-        oauth_provider: user.oauth_provider.clone(),
-        created_at: user.created_at,
-        updated_at: user.updated_at,
-    };
-
     let tokens = state
         .auth_service()
-        .issue_tokens(state.db(), &auth_user)
+        .issue_tokens(state.db(), &user)
         .await
         .map_err(AuthError::from)?;
     let frontend_url = state.frontend_url().to_string();

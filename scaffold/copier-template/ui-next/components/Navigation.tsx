@@ -35,11 +35,8 @@ export default function Navigation() {
           </button>
         ) : (
           <div className="space-x-2">
-            <Link href="/login" className="btn btn-ghost">
+            <Link href="/login" className="btn btn-primary">
               Login
-            </Link>
-            <Link href="/signup" className="btn btn-primary">
-              Sign up
             </Link>
           </div>
         )}

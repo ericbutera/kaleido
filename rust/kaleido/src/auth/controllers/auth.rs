@@ -44,6 +44,14 @@ pub trait AuthRouteStorage: Send + Sync + 'static {
         Self::ConfigProvider,
     >;
     fn frontend_url(&self) -> &str;
+
+    fn password_auth_enabled(&self) -> bool {
+        true
+    }
+
+    fn registration_enabled(&self) -> bool {
+        true
+    }
 }
 
 pub fn routes<S>() -> Router<Arc<S>>
@@ -60,6 +68,16 @@ where
         .route("/auth/verify/:token", get(verify_email::<S>))
         .route("/auth/forgot", post(forgot_password::<S>))
         .route("/auth/reset", post(reset_password::<S>))
+}
+
+pub fn session_routes<S>() -> Router<Arc<S>>
+where
+    S: AuthRouteStorage + crate::auth::extractors::AuthStorage,
+{
+    Router::new()
+        .route("/auth/current", get(current::<S>))
+        .route("/auth/refresh", post(refresh::<S>))
+        .route("/auth/logout", get(logout::<S>))
 }
 
 fn extract_cookie(headers: &HeaderMap, name: &str) -> Result<String, AuthError> {
@@ -95,6 +113,10 @@ pub async fn register<S>(
 where
     S: AuthRouteStorage,
 {
+    if !state.password_auth_enabled() || !state.registration_enabled() {
+        return Err(AuthError::forbidden("Password registration is disabled"));
+    }
+
     let res = state.auth_service().register(state.db(), payload).await?;
     Ok(Json(res))
 }
@@ -118,6 +140,10 @@ pub async fn login<S>(
 where
     S: AuthRouteStorage,
 {
+    if !state.password_auth_enabled() {
+        return Err(AuthError::forbidden("Password login is disabled"));
+    }
+
     let token = state.auth_service().login(state.db(), payload).await?;
 
     let cookie_val = refresh_cookie_value(&token.refresh_token, state.frontend_url());
@@ -133,6 +159,123 @@ where
         .map_err(|e| AuthError::internal_error(format!("Failed to build response: {}", e)))?;
 
     Ok(response)
+}
+
+#[utoipa::path(
+    post,
+    path = "/auth/resend-confirmation",
+    request_body = ResendConfirmationRequest,
+    responses(
+        (status = 200, description = "Confirmation email sent", body = MessageResponse),
+        (status = 422, description = "Validation error")
+    ),
+    tag = "auth"
+)]
+pub async fn resend_confirmation<S>(
+    State(state): State<Arc<S>>,
+    Json(payload): Json<ResendConfirmationRequest>,
+) -> Result<Json<MessageResponse>, AuthError>
+where
+    S: AuthRouteStorage,
+{
+    if !state.password_auth_enabled() {
+        return Err(AuthError::forbidden("Password authentication is disabled"));
+    }
+
+    state
+        .auth_service()
+        .resend_confirmation_email(state.db(), payload)
+        .await?;
+    Ok(Json(MessageResponse {
+        message: "Confirmation email sent successfully".to_string(),
+    }))
+}
+
+#[utoipa::path(
+    get,
+    path = "/auth/verify/{token}",
+    params(
+        ("token" = String, Path, description = "Email verification token")
+    ),
+    responses(
+        (status = 200, description = "Email verified successfully", body = MessageResponse),
+        (status = 422, description = "Invalid or expired token")
+    ),
+    tag = "auth"
+)]
+pub async fn verify_email<S>(
+    State(state): State<Arc<S>>,
+    Path(token): Path<String>,
+) -> Result<Json<MessageResponse>, AuthError>
+where
+    S: AuthRouteStorage,
+{
+    if !state.password_auth_enabled() {
+        return Err(AuthError::forbidden("Password authentication is disabled"));
+    }
+
+    state.auth_service().verify_email(state.db(), token).await?;
+    Ok(Json(MessageResponse {
+        message: "Email verified successfully".to_string(),
+    }))
+}
+
+#[utoipa::path(
+    post,
+    path = "/auth/forgot",
+    request_body = ForgotPasswordRequest,
+    responses(
+        (status = 200, description = "Password reset email sent if user exists", body = MessageResponse),
+        (status = 422, description = "Validation error")
+    ),
+    tag = "auth"
+)]
+pub async fn forgot_password<S>(
+    State(state): State<Arc<S>>,
+    Json(payload): Json<ForgotPasswordRequest>,
+) -> Result<Json<MessageResponse>, AuthError>
+where
+    S: AuthRouteStorage,
+{
+    if !state.password_auth_enabled() {
+        return Err(AuthError::forbidden("Password authentication is disabled"));
+    }
+
+    state
+        .auth_service()
+        .forgot_password(state.db(), payload)
+        .await?;
+    Ok(Json(MessageResponse {
+        message: "If the email exists, a password reset link has been sent".to_string(),
+    }))
+}
+
+#[utoipa::path(
+    post,
+    path = "/auth/reset",
+    request_body = ResetPasswordRequest,
+    responses(
+        (status = 200, description = "Password reset successful"),
+        (status = 422, description = "Invalid or expired token")
+    ),
+    tag = "auth"
+)]
+pub async fn reset_password<S>(
+    State(state): State<Arc<S>>,
+    Json(payload): Json<ResetPasswordRequest>,
+) -> Result<StatusCode, AuthError>
+where
+    S: AuthRouteStorage,
+{
+    if !state.password_auth_enabled() {
+        return Err(AuthError::forbidden("Password authentication is disabled"));
+    }
+
+    state
+        .auth_service()
+        .reset_password(state.db(), payload)
+        .await?;
+    Ok(StatusCode::OK)
 }
 
 #[utoipa::path(
@@ -272,105 +415,4 @@ where
         .map_err(|e| AuthError::internal_error(format!("Failed to build response: {}", e)))?;
 
     Ok(response)
-}
-
-#[utoipa::path(
-    post,
-    path = "/auth/resend-confirmation",
-    request_body = ResendConfirmationRequest,
-    responses(
-        (status = 200, description = "Confirmation email sent", body = MessageResponse),
-        (status = 422, description = "Validation error")
-    ),
-    tag = "auth"
-)]
-pub async fn resend_confirmation<S>(
-    State(state): State<Arc<S>>,
-    Json(payload): Json<ResendConfirmationRequest>,
-) -> Result<Json<MessageResponse>, AuthError>
-where
-    S: AuthRouteStorage,
-{
-    state
-        .auth_service()
-        .resend_confirmation_email(state.db(), payload)
-        .await?;
-    Ok(Json(MessageResponse {
-        message: "Confirmation email sent successfully".to_string(),
-    }))
-}
-
-#[utoipa::path(
-    get,
-    path = "/auth/verify/{token}",
-    params(
-        ("token" = String, Path, description = "Email verification token")
-    ),
-    responses(
-        (status = 200, description = "Email verified successfully", body = MessageResponse),
-        (status = 422, description = "Invalid or expired token")
-    ),
-    tag = "auth"
-)]
-pub async fn verify_email<S>(
-    State(state): State<Arc<S>>,
-    Path(token): Path<String>,
-) -> Result<Json<MessageResponse>, AuthError>
-where
-    S: AuthRouteStorage,
-{
-    state.auth_service().verify_email(state.db(), token).await?;
-    Ok(Json(MessageResponse {
-        message: "Email verified successfully".to_string(),
-    }))
-}
-
-#[utoipa::path(
-    post,
-    path = "/auth/forgot",
-    request_body = ForgotPasswordRequest,
-    responses(
-        (status = 200, description = "Password reset email sent if user exists", body = MessageResponse),
-        (status = 422, description = "Validation error")
-    ),
-    tag = "auth"
-)]
-pub async fn forgot_password<S>(
-    State(state): State<Arc<S>>,
-    Json(payload): Json<ForgotPasswordRequest>,
-) -> Result<Json<MessageResponse>, AuthError>
-where
-    S: AuthRouteStorage,
-{
-    state
-        .auth_service()
-        .forgot_password(state.db(), payload)
-        .await?;
-    Ok(Json(MessageResponse {
-        message: "If the email exists, a password reset link has been sent".to_string(),
-    }))
-}
-
-#[utoipa::path(
-    post,
-    path = "/auth/reset",
-    request_body = ResetPasswordRequest,
-    responses(
-        (status = 200, description = "Password reset successful"),
-        (status = 422, description = "Invalid or expired token")
-    ),
-    tag = "auth"
-)]
-pub async fn reset_password<S>(
-    State(state): State<Arc<S>>,
-    Json(payload): Json<ResetPasswordRequest>,
-) -> Result<StatusCode, AuthError>
-where
-    S: AuthRouteStorage,
-{
-    state
-        .auth_service()
-        .reset_password(state.db(), payload)
-        .await?;
-    Ok(StatusCode::OK)
 }

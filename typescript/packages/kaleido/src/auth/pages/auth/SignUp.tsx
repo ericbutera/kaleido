@@ -4,15 +4,10 @@ import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { Link, useNavigate } from "react-router-dom";
 import Layout from "../../components/auth/Layout";
-import GoogleOAuthButton from "../../components/GoogleOAuthButton";
-import { useAuthApi } from "../../lib/AuthContext";
+import OAuthProviderControls from "../../components/OAuthProviderControls";
+import SsoOnlyNotice from "../../components/SsoOnlyNotice";
+import { useAuthApi, useAuthConfig } from "../../lib/AuthContext";
 import { handleFormError } from "../../lib/form";
-
-import {
-  FLAG_OAUTH,
-  FLAG_REGISTRATION,
-  useFeatureFlag,
-} from "../../../featureFlags";
 
 function getApiStatusCode(err: unknown): number | null {
   return (err as { response?: { status?: number } })?.response?.status ?? null;
@@ -26,14 +21,30 @@ function getApiErrorMessage(err: unknown): string | null {
   return response?.error ?? response?.message ?? null;
 }
 
-type SignUp = {
+type SignUpFormValues = {
   email: string;
   name: string;
   password: string;
   confirmPassword: string;
 };
 
-export default function SignUp({ redirectUrl = "" }: { redirectUrl?: string }) {
+export default function SignUp() {
+  const { registrationEnabled } = useAuthConfig();
+
+  if (!registrationEnabled) {
+    return (
+      <SsoOnlyNotice
+        title="Create Account"
+        message="Account creation is managed by SSO."
+      />
+    );
+  }
+
+  return <CredentialSignUp />;
+}
+
+function CredentialSignUp() {
+  const { registrationEnabled } = useAuthConfig();
   // Use react-hook-form with client + server validation
   const {
     register,
@@ -41,22 +52,18 @@ export default function SignUp({ redirectUrl = "" }: { redirectUrl?: string }) {
     setError,
     watch,
     formState: { errors, isSubmitting },
-  } = useForm<SignUp>({
+  } = useForm<SignUpFormValues>({
     defaultValues: { name: "", email: "", password: "", confirmPassword: "" },
   });
 
   const navigate = useNavigate();
-  // const registrationEnabled = true;
-  const registrationEnabled = useFeatureFlag(FLAG_REGISTRATION);
-  // const oauthEnabled = false;
-  const oauthEnabled = useFeatureFlag(FLAG_OAUTH);
   const { useRegisterUser } = useAuthApi();
   const registerHook = useRegisterUser();
 
   // Non-field errors should show in a polished alert on the page
   const [pageError, setPageError] = useState<string | null>(null);
 
-  const onSubmit = async (data: SignUp) => {
+  const onSubmit = async (data: SignUpFormValues) => {
     setPageError(null);
     if (!registrationEnabled) {
       setPageError("Registrations are temporarily disabled");
@@ -207,15 +214,10 @@ export default function SignUp({ redirectUrl = "" }: { redirectUrl?: string }) {
         </fieldset>
       </form>
 
-      {oauthEnabled && (
-        <>
-          <div className="divider">OR</div>
-          <GoogleOAuthButton
-            redirectUrl={redirectUrl}
-            text="Sign up with Google"
-          />
-        </>
-      )}
+      <OAuthProviderControls
+        text="Continue with SSO"
+        prefix={<div className="divider">OR</div>}
+      />
 
       {!registrationEnabled && (
         <div className="mt-4 text-center text-sm text-neutral-content-500">

@@ -2,8 +2,11 @@ import { faEnvelope } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { Link, useLocation } from "react-router-dom";
 import Layout from "../../components/auth/Layout";
+import SsoOnlyNotice from "../../components/SsoOnlyNotice";
+import { useAuthConfig } from "../../lib/AuthContext";
 
 export default function ConfirmEmail() {
+  const { passwordAuthEnabled, registrationEnabled } = useAuthConfig();
   const location = useLocation();
   const searchParams = new URLSearchParams(location.search);
   const forwardedEmail = ((location.state as { email?: string } | null)
@@ -11,48 +14,39 @@ export default function ConfirmEmail() {
     searchParams.get("email") ??
     "") as string;
 
+  if (!passwordAuthEnabled || !registrationEnabled) {
+    return (
+      <SsoOnlyNotice
+        title="Check Your Account"
+        message="Email verification is managed by SSO."
+      />
+    );
+  }
+
   return (
     <Layout>
       <h2 className="card-title text-2xl mb-4">
-        <FontAwesomeIcon icon={faEnvelope} />
+        <FontAwesomeIcon icon={faEnvelope} className="text-primary mr-2" />
         Check Your Email
       </h2>
-
-      <div className="mt-4 text-sm text-center">
-        {forwardedEmail ? (
-          <p>
-            We&apos;ve sent a confirmation link to{" "}
-            <strong>{forwardedEmail}</strong>.
-          </p>
-        ) : (
-          <p>
-            If your registration succeeded, we&apos;ve sent a confirmation link
-            to your email address.
-          </p>
-        )}
-        <p className="mt-2">
-          Click the link in the email to activate your account.
-        </p>
-      </div>
-
-      <div className="divider" />
-
+      <p className="mb-4">
+        We sent a verification link
+        {forwardedEmail ? ` to ${forwardedEmail}` : ""}. Open it to finish
+        creating your account.
+      </p>
       <div className="join w-full justify-center">
+        <Link className="btn join-item" to="/login">
+          Sign In
+        </Link>
         <Link
+          className="btn join-item"
           to={
             forwardedEmail
               ? `/resend-confirmation?email=${encodeURIComponent(forwardedEmail)}`
               : "/resend-confirmation"
           }
-          state={forwardedEmail ? { email: forwardedEmail } : null}
-          className="btn join-item"
-          title="Didn't receive the email?"
         >
-          Resend Confirmation
-        </Link>
-
-        <Link to="/" className="btn join-item">
-          Home
+          Resend
         </Link>
       </div>
     </Layout>

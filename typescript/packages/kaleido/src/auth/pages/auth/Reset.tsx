@@ -1,9 +1,25 @@
 import { useForm } from "react-hook-form";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import Layout from "../../components/auth/Layout";
-import { useAuthApi } from "../../lib/AuthContext";
+import SsoOnlyNotice from "../../components/SsoOnlyNotice";
+import { useAuthApi, useAuthConfig } from "../../lib/AuthContext";
 
 export default function Reset() {
+  const { passwordAuthEnabled } = useAuthConfig();
+
+  if (!passwordAuthEnabled) {
+    return (
+      <SsoOnlyNotice
+        title="Reset Password"
+        message="Password reset is managed by SSO."
+      />
+    );
+  }
+
+  return <ResetForm />;
+}
+
+function ResetForm() {
   const { register, handleSubmit } = useForm<{
     token: string;
     password: string;

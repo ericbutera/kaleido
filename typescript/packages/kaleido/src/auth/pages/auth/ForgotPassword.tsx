@@ -1,8 +1,24 @@
 import { useForm } from "react-hook-form";
 import Layout from "../../components/auth/Layout";
-import { useAuthApi } from "../../lib/AuthContext";
+import SsoOnlyNotice from "../../components/SsoOnlyNotice";
+import { useAuthApi, useAuthConfig } from "../../lib/AuthContext";
 
 export default function ForgotPassword() {
+  const { passwordAuthEnabled } = useAuthConfig();
+
+  if (!passwordAuthEnabled) {
+    return (
+      <SsoOnlyNotice
+        title="Account Recovery"
+        message="Password recovery is managed by SSO."
+      />
+    );
+  }
+
+  return <ForgotPasswordForm />;
+}
+
+function ForgotPasswordForm() {
   const { register, handleSubmit } = useForm<{ email: string }>({
     defaultValues: { email: "" },
   });
@@ -12,9 +28,8 @@ export default function ForgotPassword() {
   const onSubmit = async (data: { email: string }) => {
     try {
       await forgot.mutateAsync(data.email);
-      // maybe show toast
     } catch (e) {
-      // ignore
+      // Preserve the previous no-enumeration UX.
     }
   };
 

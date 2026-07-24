@@ -1,6 +1,6 @@
 use crate::auth::entities::users::{self, Entity as Users};
 use crate::auth::error::AuthError;
-use crate::auth::services::provider_settings::{self, PROVIDER_GOOGLE};
+use crate::auth::services::provider_settings;
 use oauth2::basic::BasicClient;
 use oauth2::reqwest::async_http_client;
 use oauth2::AuthType;
@@ -10,6 +10,7 @@ use oauth2::{
 };
 use sea_orm::{ActiveModelTrait, ColumnTrait, DatabaseConnection, EntityTrait, QueryFilter, Set};
 use serde::{Deserialize, Serialize};
+use std::env;
 use uuid::Uuid;
 
 #[derive(Debug, Serialize)]
@@ -19,11 +20,25 @@ pub struct OAuthAuthorizeUrl {
 }
 
 #[derive(Debug, Deserialize)]
-pub struct GoogleUserInfo {
-    pub id: String,
+pub struct OAuthUserInfo {
+    #[serde(alias = "sub", alias = "id")]
+    pub subject: String,
     pub email: String,
+    #[serde(default)]
     pub name: Option<String>,
-    pub verified_email: bool,
+    #[serde(default)]
+    pub preferred_username: Option<String>,
+    #[serde(default, alias = "email_verified")]
+    pub verified_email: Option<bool>,
+}
+
+impl OAuthUserInfo {
+    fn display_name(&self) -> String {
+        self.name
+            .clone()
+            .or_else(|| self.preferred_username.clone())
+            .unwrap_or_else(|| self.email.clone())
+    }
 }
 
 pub struct OAuthService;
@@ -63,18 +78,15 @@ impl OAuthService {
 
         let mut auth_req = client.authorize_url(CsrfToken::new_random);
 
-        // Provider specific scopes
-        if cfg.provider == PROVIDER_GOOGLE {
-            auth_req = auth_req
-                .add_scope(Scope::new("email".to_string()))
-                .add_scope(Scope::new("profile".to_string()));
+        for scope in &cfg.scopes {
+            auth_req = auth_req.add_scope(Scope::new(scope.clone()));
         }
 
         let (auth_url, _csrf_token) = auth_req.url();
         Ok(auth_url.clone())
     }
 
-    /// Generate authorization URL for a named provider (eg. "google")
+    /// Generate authorization URL for a named provider.
     pub async fn get_authorization_url(
         _db: &DatabaseConnection,
         provider: &str,
@@ -86,11 +98,8 @@ impl OAuthService {
 
         let mut auth_req = client.authorize_url(CsrfToken::new_random);
 
-        // Provider specific scopes
-        if provider == PROVIDER_GOOGLE {
-            auth_req = auth_req
-                .add_scope(Scope::new("email".to_string()))
-                .add_scope(Scope::new("profile".to_string()));
+        for scope in cfg.scopes {
+            auth_req = auth_req.add_scope(Scope::new(scope));
         }
 
         let (auth_url, csrf_token) = auth_req.url();
@@ -104,13 +113,12 @@ impl OAuthService {
     }
 
     /// Exchange authorization code for access token and get user info for a provider.
-    /// Currently only Google is implemented.
     pub async fn exchange_code_and_get_user(
         _db: &DatabaseConnection,
         provider: &str,
         code: String,
         api_url: &str,
-    ) -> Result<GoogleUserInfo, AuthError> {
+    ) -> Result<OAuthUserInfo, AuthError> {
         let cfg = provider_settings::get_provider_config(provider, api_url).await?;
         let client = Self::create_client_from_config(cfg.clone())?;
 
@@ -121,8 +129,7 @@ impl OAuthService {
             .await
             .map_err(|e| AuthError::internal_error(format!("Token exchange failed: {}", e)))?;
 
-        // Currently only Google userinfo shape is supported
-        let user_info: GoogleUserInfo = reqwest::Client::new()
+        let user_info: OAuthUserInfo = reqwest::Client::new()
             .get(&cfg.userinfo_url)
             .bearer_auth(token_result.access_token().secret())
             .send()
@@ -132,21 +139,23 @@ impl OAuthService {
             .await
             .map_err(|e| AuthError::internal_error(format!("Failed to parse user info: {}", e)))?;
 
-        if !user_info.verified_email {
+        if user_info.verified_email == Some(false) {
             return Err(AuthError::validation("Email not verified by provider"));
         }
 
         Ok(user_info)
     }
 
-    /// Find or create user from Google OAuth (keeps previous behaviour)
-    pub async fn find_or_create_user(
+    /// Find or create user from an OAuth/OIDC provider.
+    pub async fn find_or_create_provider_user(
         db: &DatabaseConnection,
-        google_user: GoogleUserInfo,
+        provider: &str,
+        provider_user: OAuthUserInfo,
     ) -> Result<users::Model, AuthError> {
-        // First, try to find user by google_id
+        // First, try to find user by provider subject.
         if let Some(user) = Users::find()
-            .filter(users::Column::GoogleId.eq(&google_user.id))
+            .filter(users::Column::OauthSubject.eq(&provider_user.subject))
+            .filter(users::Column::OauthProvider.eq(provider))
             .one(db)
             .await
             .map_err(|e| AuthError::internal_error(format!("Database error: {}", e)))?
@@ -154,17 +163,17 @@ impl OAuthService {
             return Ok(user);
         }
 
-        // Second, try to find user by email and link Google account
+        // Second, try to find user by email and link this provider.
         if let Some(mut user) = Users::find()
-            .filter(users::Column::Email.eq(&google_user.email))
+            .filter(users::Column::Email.eq(&provider_user.email))
             .one(db)
             .await
             .map_err(|e| AuthError::internal_error(format!("Database error: {}", e)))?
         {
-            // Link Google account to existing user
+            // Link provider account to existing user.
             let mut active_user: users::ActiveModel = user.clone().into();
-            active_user.google_id = Set(Some(google_user.id));
-            active_user.oauth_provider = Set(Some(PROVIDER_GOOGLE.to_string()));
+            active_user.oauth_subject = Set(Some(provider_user.subject));
+            active_user.oauth_provider = Set(Some(provider.to_string()));
 
             user = active_user
                 .update(db)
@@ -174,16 +183,15 @@ impl OAuthService {
             return Ok(user);
         }
 
-        // Create new user with Google account
+        // Create new OAuth-only user.
+        let display_name = provider_user.display_name();
         let new_user = users::ActiveModel {
             pid: Set(Uuid::new_v4()),
-            email: Set(google_user.email.clone()),
+            email: Set(provider_user.email.clone()),
             password: Set(None), // OAuth users don't have a password
-            google_id: Set(Some(google_user.id)),
-            oauth_provider: Set(Some(PROVIDER_GOOGLE.to_string())),
-            name: Set(google_user
-                .name
-                .unwrap_or_else(|| google_user.email.clone())),
+            oauth_subject: Set(Some(provider_user.subject)),
+            oauth_provider: Set(Some(provider.to_string())),
+            name: Set(display_name),
             email_verified_at: Set(Some(chrono::Utc::now())), // provider verified the email
             api_key: Set(Uuid::new_v4().to_string()),
             ..Default::default()
@@ -196,4 +204,25 @@ impl OAuthService {
 
         Ok(user)
     }
+
+    /// Build the synthetic provider user used by the explicitly-enabled local dev provider.
+    pub fn local_dev_user_info() -> OAuthUserInfo {
+        let email = env_or_default("OAUTH_DEV_EMAIL", "developer@bike.local");
+
+        OAuthUserInfo {
+            subject: env_or_default("OAUTH_DEV_SUBJECT", "local-dev"),
+            email: email.clone(),
+            name: Some(env_or_default("OAUTH_DEV_NAME", "Local Developer")),
+            preferred_username: Some(email),
+            verified_email: Some(true),
+        }
+    }
+}
+
+fn env_or_default(name: &str, default: &str) -> String {
+    env::var(name)
+        .ok()
+        .map(|value| value.trim().to_string())
+        .filter(|value| !value.is_empty())
+        .unwrap_or_else(|| default.to_string())
 }

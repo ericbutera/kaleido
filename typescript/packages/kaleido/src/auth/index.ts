@@ -8,8 +8,10 @@ export type {
   AuthApiClient,
   AuthConfig,
   LoginRequest,
+  OAuthProviderOption,
   RegisterRequest,
   ResendConfirmationRequest,
+  ResolvedAuthConfig,
   ResetRequest,
   User,
 } from "./lib/types";
@@ -20,7 +22,13 @@ export { redirectToOrigin } from "./lib/utils";
 
 // Components
 export { default as AuthLayout } from "./components/auth/Layout";
+export {
+  createOAuthProviderButtons,
+  default as SsoProviderButtons,
+} from "./components/SsoProviderButtons";
+export { default as OAuthProviderControls } from "./components/OAuthProviderControls";
 export { default as ProtectedRoute } from "./components/ProtectedRoute";
+export { default as SsoOnlyNotice } from "./components/SsoOnlyNotice";
 
 // Pages
 export { default as ConfirmEmail } from "./pages/auth/ConfirmEmail";

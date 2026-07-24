@@ -88,6 +88,14 @@ impl AuthRouteStorage for AppStorage {
     fn frontend_url(&self) -> &str {
         &Config::get().frontend_url
     }
+
+    fn password_auth_enabled(&self) -> bool {
+        Config::get().auth_password_enabled
+    }
+
+    fn registration_enabled(&self) -> bool {
+        Config::get().auth_registration_enabled
+    }
 }
 
 impl OAuthRouteStorage for AppStorage {
@@ -96,6 +104,6 @@ impl OAuthRouteStorage for AppStorage {
     }
 
     fn oauth_enabled(&self) -> bool {
-        false
+        kaleido::auth::OAuthProviderService::is_any_provider_enabled()
     }
 }

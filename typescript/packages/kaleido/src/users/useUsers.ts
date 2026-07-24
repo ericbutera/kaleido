@@ -24,17 +24,11 @@ export type UsersMutation<TInput = any, TResult = any> = {
   isPending: boolean;
 };
 
-export interface CreateUserInput {
+export interface UserFormData {
   email: string;
   name?: string;
-  password?: string;
-  is_admin?: boolean;
-  [key: string]: any;
-}
-
-export type UserFormData = Omit<CreateUserInput, "is_admin"> & {
   is_admin: boolean;
-};
+}
 
 export interface UpdateUserInput {
   email?: string;
@@ -55,13 +49,10 @@ export interface DisableUserInput extends UserActionInput {
 export interface UsersConfig {
   useUsers: (params?: any) => UseUsersResult;
   useUser?: (id: string | null) => { data: User | null; isLoading: boolean };
-  useCreateUser: () => UsersMutation<CreateUserInput, any>;
   useUpdateUser: () => UsersMutation<
     { id: string; data: UpdateUserInput },
     any
   >;
-  useResendForgotPassword: () => UsersMutation<UserActionInput, any>;
-  useResendConfirmationEmail: () => UsersMutation<UserActionInput, any>;
   useDisableUserAccount: () => UsersMutation<DisableUserInput, any>;
 }
 
@@ -87,15 +78,6 @@ export function useUser(id: string | null) {
   return config.useUser(id);
 }
 
-export function useCreateUser() {
-  if (!config) {
-    throw new Error(
-      "Users not configured. Call users.configureUsers() before using user hooks.",
-    );
-  }
-  return config.useCreateUser();
-}
-
 export function useUpdateUser() {
   if (!config) {
     throw new Error(
@@ -103,24 +85,6 @@ export function useUpdateUser() {
     );
   }
   return config.useUpdateUser();
-}
-
-export function useResendForgotPassword() {
-  if (!config) {
-    throw new Error(
-      "Users not configured. Call users.configureUsers() before using user hooks.",
-    );
-  }
-  return config.useResendForgotPassword();
-}
-
-export function useResendConfirmationEmail() {
-  if (!config) {
-    throw new Error(
-      "Users not configured. Call users.configureUsers() before using user hooks.",
-    );
-  }
-  return config.useResendConfirmationEmail();
 }
 
 export function useDisableUserAccount() {

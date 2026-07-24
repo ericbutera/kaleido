@@ -1,3 +1,4 @@
+import type { ComponentType, ReactNode } from "react";
 import type { UseFormSetError } from "react-hook-form";
 
 // ============================================================================
@@ -43,9 +44,28 @@ export interface ApiError {
 // ============================================================================
 
 export interface AuthConfig {
-  oauthEnabled?: boolean;
+  passwordAuthEnabled?: boolean;
   registrationEnabled?: boolean;
-  OAuthButton?: React.ComponentType<{ text: string }>;
+  OAuthProviderButtons?: ComponentType<{
+    text?: string;
+    prefix?: ReactNode;
+    unavailable?: ReactNode;
+  }>;
+}
+
+export interface ResolvedAuthConfig {
+  passwordAuthEnabled: boolean;
+  registrationEnabled: boolean;
+  OAuthProviderButtons?: ComponentType<{
+    text?: string;
+    prefix?: ReactNode;
+    unavailable?: ReactNode;
+  }>;
+}
+
+export interface OAuthProviderOption {
+  id: string;
+  label: string;
 }
 
 // ============================================================================

@@ -11,8 +11,6 @@ export * as auth from "./auth";
 //   AuthConfig,
 //   LoginRequest,
 //   RegisterRequest,
-//   ResendConfirmationRequest,
-//   ResetRequest,
 //   User,
 // } from "./auth";
 export * as components from "./components";

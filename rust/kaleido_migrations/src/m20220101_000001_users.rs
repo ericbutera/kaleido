@@ -20,7 +20,7 @@ enum Users {
     MagicLinkToken,
     MagicLinkExpiration,
     IsAdmin,
-    GoogleId,
+    OauthSubject,
     OauthProvider,
     CreatedAt,
     UpdatedAt,
@@ -91,7 +91,12 @@ impl MigrationTrait for Migration {
                             .default(false),
                     )
                     // oauth fields
-                    .col(ColumnDef::new(Users::GoogleId).string().null().unique_key())
+                    .col(
+                        ColumnDef::new(Users::OauthSubject)
+                            .string()
+                            .null()
+                            .unique_key(),
+                    )
                     .col(ColumnDef::new(Users::OauthProvider).string().null())
                     .col(
                         ColumnDef::new(Users::CreatedAt)

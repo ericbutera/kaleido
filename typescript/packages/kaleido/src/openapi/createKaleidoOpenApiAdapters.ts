@@ -33,10 +33,7 @@ export interface TasksOpenApiMapping {
 export interface UsersOpenApiMapping {
   listPath: string;
   detailPath: string;
-  createPath: string;
   updatePath: string;
-  resendForgotPasswordPath: string;
-  resendConfirmationPath: string;
   disablePath: string;
   extractListData?: (responseData: any) => User[];
   extractDetailData?: (responseData: any) => User | null;
@@ -224,14 +221,7 @@ function buildUsersConfig(options: CreateKaleidoOpenApiAdaptersOptions) {
   const mapping: UsersOpenApiMapping = {
     listPath: options.users?.listPath ?? "/admin/users",
     detailPath: options.users?.detailPath ?? "/admin/users/{id}",
-    createPath: options.users?.createPath ?? "/admin/users",
     updatePath: options.users?.updatePath ?? "/admin/users/{id}",
-    resendForgotPasswordPath:
-      options.users?.resendForgotPasswordPath ??
-      "/admin/users/{id}/resend-forgot-password",
-    resendConfirmationPath:
-      options.users?.resendConfirmationPath ??
-      "/admin/users/{id}/resend-confirmation",
     disablePath: options.users?.disablePath ?? "/admin/users/{id}/disable",
     extractListData:
       options.users?.extractListData ??
@@ -280,24 +270,6 @@ function buildUsersConfig(options: CreateKaleidoOpenApiAdaptersOptions) {
         isLoading: response.isLoading,
       };
     },
-    useCreateUser: () => {
-      const queryClient = options.useQueryClient();
-      const mutation = (options.api.useMutation as any)(
-        "post",
-        mapping.createPath,
-      );
-
-      return {
-        mutateAsync: async (data: any) => {
-          const result = await mutation.mutateAsync({ body: data });
-          queryClient.invalidateQueries({
-            queryKey: ["get", mapping.listPath],
-          });
-          return result;
-        },
-        isPending: mutation.isPending,
-      };
-    },
     useUpdateUser: () => {
       const queryClient = options.useQueryClient();
       const mutation = (options.api.useMutation as any)(
@@ -319,30 +291,6 @@ function buildUsersConfig(options: CreateKaleidoOpenApiAdaptersOptions) {
           });
           return result;
         },
-        isPending: mutation.isPending,
-      };
-    },
-    useResendForgotPassword: () => {
-      const mutation = (options.api.useMutation as any)(
-        "post",
-        mapping.resendForgotPasswordPath,
-      );
-
-      return {
-        mutateAsync: async ({ id }: { id: string }) =>
-          await mutation.mutateAsync({ params: { path: { id: Number(id) } } }),
-        isPending: mutation.isPending,
-      };
-    },
-    useResendConfirmationEmail: () => {
-      const mutation = (options.api.useMutation as any)(
-        "post",
-        mapping.resendConfirmationPath,
-      );
-
-      return {
-        mutateAsync: async ({ id }: { id: string }) =>
-          await mutation.mutateAsync({ params: { path: { id: Number(id) } } }),
         isPending: mutation.isPending,
       };
     },

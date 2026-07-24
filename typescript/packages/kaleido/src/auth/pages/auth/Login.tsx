@@ -4,11 +4,23 @@ import { useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import Layout from "../../components/auth/Layout";
+import OAuthProviderControls from "../../components/OAuthProviderControls";
+import SsoOnlyNotice from "../../components/SsoOnlyNotice";
 import { useAuthApi, useAuthConfig } from "../../lib/AuthContext";
 import { handleFormError } from "../../lib/form";
 import { redirectToOrigin } from "../../lib/utils";
 
 export default function Login() {
+  const { passwordAuthEnabled } = useAuthConfig();
+
+  if (!passwordAuthEnabled) {
+    return <SsoOnlyNotice title="Welcome Back" />;
+  }
+
+  return <CredentialLogin />;
+}
+
+function CredentialLogin() {
   const {
     register,
     handleSubmit,
@@ -20,7 +32,7 @@ export default function Login() {
   const navigate = useNavigate();
   const location = useLocation();
   const { useLoginUser, useCurrentUser } = useAuthApi();
-  const { oauthEnabled, registrationEnabled, OAuthButton } = useAuthConfig();
+  const { registrationEnabled } = useAuthConfig();
   const login = useLoginUser();
   const { user } = useCurrentUser();
 
@@ -115,9 +127,7 @@ export default function Login() {
         </fieldset>
       </form>
 
-      {oauthEnabled && OAuthButton && (
-        <OAuthButton text="Sign in with Google" />
-      )}
+      <OAuthProviderControls text="Continue with SSO" />
 
       <div className="divider" />
 

@@ -2,42 +2,47 @@ import { useEffect, useState } from "react";
 import toast from "react-hot-toast";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import Layout from "../../components/auth/Layout";
-import { useAuthApi } from "../../lib/AuthContext";
+import SsoOnlyNotice from "../../components/SsoOnlyNotice";
+import { useAuthApi, useAuthConfig } from "../../lib/AuthContext";
 
 export default function Verify() {
+  const { passwordAuthEnabled } = useAuthConfig();
+
+  if (!passwordAuthEnabled) {
+    return (
+      <SsoOnlyNotice
+        title="Verify Email"
+        message="Email verification is managed by SSO."
+      />
+    );
+  }
+
+  return <VerifyToken />;
+}
+
+function VerifyToken() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const [loading, setLoading] = useState(false);
-  const [errorMsg, setErrorMsg] = useState<string | null>(null);
-  const [showResend, setShowResend] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [done, setDone] = useState(false);
   const { useVerifyEmail } = useAuthApi();
   const verify = useVerifyEmail();
-
   const token = searchParams.get("token");
 
   const onVerify = async () => {
     if (!token) {
-      setErrorMsg("No token provided.");
+      setError("Missing verification token");
       return;
     }
     setLoading(true);
+    setError(null);
     try {
       await verify.mutateAsync(token);
-      toast.success("Email verified! You can now log in.");
-      navigate("/login");
-    } catch (e) {
-      const data = (e as any)?.response?.data;
-      const msg =
-        data?.error ||
-        data?.message ||
-        (e as any)?.message ||
-        "Verification failed.";
-      const normalized = String(msg).toLowerCase();
-      // If token is invalid/expired, offer a resend flow
-      if (normalized.includes("invalid") || normalized.includes("expired")) {
-        setShowResend(true);
-      }
-      setErrorMsg(String(msg));
+      setDone(true);
+      toast.success("Email verified");
+    } catch (err) {
+      setError("Verification failed");
     } finally {
       setLoading(false);
     }
@@ -45,39 +50,33 @@ export default function Verify() {
 
   useEffect(() => {
     if (token) onVerify();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [token]);
 
   return (
     <Layout>
       <h2 className="text-2xl font-bold mb-4">Verify Email</h2>
-      <div className="flex flex-col items-center gap-4">
+      {error && <div className="alert alert-error mb-4">{error}</div>}
+      {done ? (
+        <button className="btn btn-primary" onClick={() => navigate("/login")}>
+          Sign In
+        </button>
+      ) : (
         <button
           className="btn btn-primary"
+          disabled={loading}
           onClick={onVerify}
-          disabled={loading || showResend}
         >
-          {loading ? "Verifying…" : "Verify"}
+          {loading ? "Verifying..." : "Verify"}
         </button>
-
-        {errorMsg && (
-          <div className="text-sm text-center text-error mt-2">{errorMsg}</div>
-        )}
-
-        {showResend && (
-          <div className="mt-2 flex flex-col items-center gap-2">
-            <p className="text-sm mb-2">
-              Token is invalid or expired. Request a new confirmation email.
-            </p>
-            <button
-              className="btn btn-secondary"
-              onClick={() => navigate("/resend-confirmation")}
-            >
-              Resend Confirmation
-            </button>
-          </div>
-        )}
-      </div>
+      )}
+      {!token && (
+        <button
+          className="btn btn-ghost mt-2"
+          onClick={() => navigate("/resend-confirmation")}
+        >
+          Resend confirmation
+        </button>
+      )}
     </Layout>
   );
 }

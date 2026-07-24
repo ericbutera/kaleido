@@ -8,6 +8,8 @@ mod m20260124_120500_api_clients;
 mod m20260125_212110_create_feature_flags;
 mod m20260210_000001_auth_events;
 mod m20260312_000000_background_tasks_result;
+mod m20260724_000001_remove_oauth_feature_flag;
+mod m20260724_000002_rename_oauth_subject_column;
 
 pub fn external_migrations() -> Vec<Box<dyn MigrationTrait>> {
     vec![
@@ -19,5 +21,7 @@ pub fn external_migrations() -> Vec<Box<dyn MigrationTrait>> {
         Box::new(m20260125_212110_create_feature_flags::Migration),
         Box::new(m20260210_000001_auth_events::Migration),
         Box::new(m20260312_000000_background_tasks_result::Migration),
+        Box::new(m20260724_000001_remove_oauth_feature_flag::Migration),
+        Box::new(m20260724_000002_rename_oauth_subject_column::Migration),
     ]
 }

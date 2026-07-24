@@ -5,27 +5,19 @@ import { default as Modal } from "../components/users/Modal";
 
 export default function Users() {
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
-  const [mode, setMode] = useState<"create" | "edit" | null>(null);
-
-  const openCreate = () => {
-    setSelectedUser(null);
-    setMode("create");
-  };
 
   const openEdit = (user: User) => {
     setSelectedUser(user);
-    setMode("edit");
   };
 
   const closeModal = () => {
     setSelectedUser(null);
-    setMode(null);
   };
 
   return (
     <>
-      <List onCreateUser={openCreate} onSelectUser={openEdit} />
-      <Modal mode={mode} selectedUser={selectedUser} onClose={closeModal} />
+      <List onSelectUser={openEdit} />
+      <Modal selectedUser={selectedUser} onClose={closeModal} />
     </>
   );
 }
