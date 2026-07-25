@@ -261,7 +261,7 @@ export function createKaleidoOpenApiAuthClient(
 
       return {
         mutateAsync: async () => {
-          await mutation.mutateAsync({ body: "" });
+          await mutation.mutateAsync({});
         },
         isPending: mutation.isPending,
       };

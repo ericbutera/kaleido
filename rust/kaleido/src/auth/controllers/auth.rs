@@ -96,6 +96,26 @@ fn extract_cookie(headers: &HeaderMap, name: &str) -> Result<String, AuthError> 
     Err(AuthError::unauthorized(format!("Missing cookie: {}", name)))
 }
 
+fn trim_ascii_whitespace(bytes: &[u8]) -> &[u8] {
+    let start = bytes
+        .iter()
+        .position(|byte| !byte.is_ascii_whitespace())
+        .unwrap_or(bytes.len());
+    let end = bytes
+        .iter()
+        .rposition(|byte| !byte.is_ascii_whitespace())
+        .map(|index| index + 1)
+        .unwrap_or(start);
+
+    &bytes[start..end]
+}
+
+fn refresh_body_uses_cookie(body: &[u8]) -> bool {
+    let trimmed = trim_ascii_whitespace(body);
+
+    trimmed.is_empty() || trimmed == b"\"\"" || trimmed == b"null" || trimmed == b"{}"
+}
+
 #[utoipa::path(
     post,
     path = "/auth/register",
@@ -318,7 +338,7 @@ pub async fn refresh<S>(
 where
     S: AuthRouteStorage,
 {
-    let used_cookie = body.is_empty();
+    let used_cookie = refresh_body_uses_cookie(&body);
     let refresh_token = if used_cookie {
         extract_cookie(&headers, REFRESH_COOKIE_NAME)?
     } else {
@@ -370,6 +390,27 @@ where
         .map_err(|e| AuthError::internal_error(format!("Failed to build response: {}", e)))?;
 
     Ok(response)
+}
+
+#[cfg(test)]
+mod tests {
+    use super::refresh_body_uses_cookie;
+
+    #[test]
+    fn cookie_refresh_accepts_empty_body_shapes() {
+        assert!(refresh_body_uses_cookie(b""));
+        assert!(refresh_body_uses_cookie(b"   \n\t"));
+        assert!(refresh_body_uses_cookie(br#""""#));
+        assert!(refresh_body_uses_cookie(b"null"));
+        assert!(refresh_body_uses_cookie(b"{}"));
+    }
+
+    #[test]
+    fn explicit_refresh_token_body_does_not_use_cookie() {
+        assert!(!refresh_body_uses_cookie(
+            br#"{"refresh_token":"refresh-token"}"#
+        ));
+    }
 }
 
 #[utoipa::path(
