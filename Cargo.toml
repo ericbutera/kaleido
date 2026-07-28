@@ -2,10 +2,7 @@
 resolver = "2"
 
 members = [
-    "rust/auth",
-    "rust/background_jobs",
-    "rust/kaleido_migrations",
-    "rust/glass",
+    "rust/kaleido",
 ]
 
 exclude = [
@@ -33,6 +30,7 @@ async-trait = "0.1"
 futures = "0.3"
 sqlx = { version = "0.8", features = ["runtime-tokio-rustls", "postgres"] }
 sea-orm = { version = "2.0.0-rc.27", features = ["sqlx-postgres", "runtime-tokio-rustls", "macros"] }
+sea-orm-migration = { version = "2.0.0-rc.27", features = ["runtime-tokio-native-tls", "sqlx-postgres", "sqlx-sqlite"] }
 axum = { version = "0.7", features = ["macros"] }
 tower = "0.5"
 tower-http = { version = "0.6", features = ["trace", "cors"] }

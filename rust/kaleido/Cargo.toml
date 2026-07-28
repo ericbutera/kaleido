@@ -1,7 +1,10 @@
 [package]
 name = "kaleido"
-version = "0.2.0"
+version = "0.8.0"
 edition = "2021"
+description = "Shared auth, background jobs, and application utilities for Kaleido apps"
+license = "MIT"
+repository = "https://github.com/ericbutera/kaleido"
 
 [dependencies]
 # Web framework
@@ -12,6 +15,7 @@ async-trait = { workspace = true }
 tokio = { workspace = true }
 # Database
 sea-orm = { workspace = true }
+sea-orm-migration = { workspace = true }
 # Serialization
 serde = { workspace = true }
 serde_json = { workspace = true }

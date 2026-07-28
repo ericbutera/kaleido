@@ -2,7 +2,9 @@
 set -euo pipefail
 
 PACKAGE_NAME="@ericbutera/kaleido"
+CARGO_PACKAGE_NAME="kaleido"
 PACKAGE_RELATIVE_PATH="typescript/packages/kaleido"
+RUST_PACKAGE_RELATIVE_PATH="rust/kaleido"
 
 usage() {
   cat <<'EOF'
@@ -14,7 +16,7 @@ Usage:
 
 Optional:
   CONFIRM=vX.Y.Z        Skip the interactive tag confirmation.
-  SKIP_CHECKS=1         Skip pnpm install/typecheck/build.
+  SKIP_CHECKS=1         Skip pnpm install/typecheck/build and cargo package checks.
 
 Release safety:
   - must be on main with a clean working tree
@@ -38,6 +40,7 @@ script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 repo_root="$(cd "$script_dir/.." && pwd)"
 package_dir="$repo_root/$PACKAGE_RELATIVE_PATH"
 package_json="$package_dir/package.json"
+rust_manifest="$repo_root/$RUST_PACKAGE_RELATIVE_PATH/Cargo.toml"
 
 action="${1:-}"
 case "$action" in
@@ -56,6 +59,19 @@ current_version() {
 const fs = require("fs");
 const packageJson = JSON.parse(fs.readFileSync(process.env.PACKAGE_JSON, "utf8"));
 console.log(packageJson.version);
+NODE
+}
+
+rust_current_version() {
+  RUST_MANIFEST="$rust_manifest" node <<'NODE'
+const fs = require("fs");
+const manifest = fs.readFileSync(process.env.RUST_MANIFEST, "utf8");
+const match = /^version = "([^"]+)"/m.exec(manifest);
+if (!match) {
+  console.error("Could not find Rust package version");
+  process.exit(1);
+}
+console.log(match[1]);
 NODE
 }
 
@@ -93,13 +109,25 @@ NODE
 }
 
 write_version() {
-  VERSION="$1" PACKAGE_JSON="$package_json" node <<'NODE'
+  VERSION="$1" PACKAGE_JSON="$package_json" RUST_MANIFEST="$rust_manifest" node <<'NODE'
 const fs = require("fs");
 
-const path = process.env.PACKAGE_JSON;
-const packageJson = JSON.parse(fs.readFileSync(path, "utf8"));
+const packageJsonPath = process.env.PACKAGE_JSON;
+const packageJson = JSON.parse(fs.readFileSync(packageJsonPath, "utf8"));
 packageJson.version = process.env.VERSION;
-fs.writeFileSync(path, `${JSON.stringify(packageJson, null, 2)}\n`);
+fs.writeFileSync(packageJsonPath, `${JSON.stringify(packageJson, null, 2)}\n`);
+
+const rustManifestPath = process.env.RUST_MANIFEST;
+const rustManifest = fs.readFileSync(rustManifestPath, "utf8");
+const updatedRustManifest = rustManifest.replace(
+  /^version = "[^"]+"/m,
+  `version = "${process.env.VERSION}"`,
+);
+if (updatedRustManifest === rustManifest) {
+  console.error("Could not update Rust package version");
+  process.exit(1);
+}
+fs.writeFileSync(rustManifestPath, updatedRustManifest);
 NODE
 }
 
@@ -165,6 +193,7 @@ run_package_checks() {
   fi
 
   require_cmd pnpm
+  require_cmd cargo
 
   echo "Installing dependencies..."
   (cd "$package_dir" && pnpm install --no-frozen-lockfile)
@@ -174,6 +203,17 @@ run_package_checks() {
 
   echo "Building..."
   (cd "$package_dir" && pnpm build)
+
+  echo "Checking Rust formatting..."
+  (cd "$repo_root" && cargo fmt --all --check)
+
+  echo "Packaging Rust crate..."
+  (cd "$repo_root" && cargo package -p "$CARGO_PACKAGE_NAME" --locked)
+}
+
+refresh_rust_lockfile() {
+  echo "Refreshing Rust lockfile..."
+  (cd "$repo_root" && cargo metadata --format-version 1 --no-deps >/dev/null)
 }
 
 push_release_refs() {
@@ -191,6 +231,7 @@ print_status() {
   latest="$(latest_release_tag)"
 
   echo "$PACKAGE_NAME version: $(current_version)"
+  echo "$CARGO_PACKAGE_NAME crate version: $(rust_current_version)"
   echo "branch: $(git branch --show-current)"
   echo "working tree: $clean"
   echo "HEAD: $(git rev-parse --short HEAD)"
@@ -241,11 +282,16 @@ if command -v npm >/dev/null 2>&1 && npm view "$PACKAGE_NAME@$next" version >/de
   die "npm already has $PACKAGE_NAME@$next"
 fi
 
+if command -v cargo >/dev/null 2>&1 && cargo info "$CARGO_PACKAGE_NAME@$next" >/dev/null 2>&1; then
+  die "crates.io already has $CARGO_PACKAGE_NAME@$next"
+fi
+
 run_package_checks
 confirm_tag "$tag"
 
 write_version "$next"
-git add "$PACKAGE_RELATIVE_PATH/package.json"
+refresh_rust_lockfile
+git add "$PACKAGE_RELATIVE_PATH/package.json" "$RUST_PACKAGE_RELATIVE_PATH/Cargo.toml" Cargo.lock
 git commit -m "chore(release): $tag"
 git tag -a "$tag" -m "$tag"
 push_release_refs "$tag"

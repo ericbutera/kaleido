@@ -22,9 +22,11 @@ task release:major
 ```
 
 The release task fetches `origin/main` and tags, requires a clean `main`
-branch, runs package checks, asks you to type the computed tag, creates the
-version commit and tag, then pushes them atomically. If you rerun the command
-while `HEAD` is already a pushed release tag, it exits without bumping again.
+branch, runs npm and Cargo package checks, asks you to type the computed tag,
+creates the version commit and tag, then pushes them atomically. The tag
+workflow publishes both `@ericbutera/kaleido` to npm and `kaleido` to
+crates.io. If you rerun the command while `HEAD` is already a pushed release
+tag, it exits without bumping again.
 
 Consumer apps are updated from their own repos:
 
@@ -63,9 +65,7 @@ pnpm build
 
 ### Rust
 
-- **auth** - JWT authentication, cookies, user management, OAuth
-- **background_jobs** - Durable background job queue with memory/persistent storage
-- **glass** - Shared application services and primitives (including shared email transport/templates)
+- **kaleido** - Shared Rust crate exporting `auth`, `background_jobs`, `glass`, and `migrations`
 
 ### TypeScript
 
@@ -73,13 +73,16 @@ pnpm build
 
 ## Publishing
 
-Normal publish flow should go through the repo `task` commands above.
+Normal publish flow should go through the repo `task` commands above. GitHub
+Actions needs npm trusted publishing configured for `publish.yml` and a
+`CARGO_REGISTRY_TOKEN` secret with crates.io publish rights for the `kaleido`
+crate.
 
 ### Rust Crates
 
 ```bash
-cd rust/auth
-cargo publish
+cd rust/kaleido
+cargo publish --locked
 ```
 
 ### npm Packages
@@ -95,7 +98,7 @@ Each language workspace is independent. Navigate to the appropriate directory an
 
 ### Adding New Packages
 
-**Rust**: Add new crate directory and reference in `rust/Cargo.toml`
+**Rust**: Add modules to `rust/kaleido` unless there is a strong reason to create a new crate.
 
 **TypeScript**: Add new package directory and reference in `typescript/package.json` workspaces
 

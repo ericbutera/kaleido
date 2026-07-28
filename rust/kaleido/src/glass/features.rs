@@ -4,6 +4,3 @@
 pub use crate::glass::cooldown;
 pub use crate::glass::email;
 pub use crate::glass::feature_flags;
-
-// Re-export the auth crate under the features module as well
-// `auth` is its own crate in the workspace and not re-exported here.

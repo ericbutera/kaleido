@@ -22,4 +22,4 @@ serde = { workspace = true }
 serde_json = { workspace = true }
 async-trait = { workspace = true }
 chrono = { workspace = true }
-kaleido = { git = "https://github.com/ericbutera/kaleido", branch = "main" }
+kaleido = "0.8"

@@ -28,4 +28,4 @@ utoipa = { workspace = true }
 utoipa-swagger-ui = { workspace = true }
 migration = { path = "../migration" }
 
-kaleido = { git = "https://github.com/ericbutera/kaleido", branch = "main" }
+kaleido = "0.8"

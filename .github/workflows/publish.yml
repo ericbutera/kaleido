@@ -20,6 +20,9 @@ jobs:
           node-version: '24'
           registry-url: 'https://registry.npmjs.org'
 
+      - name: Set up Rust
+        uses: dtolnay/rust-toolchain@stable
+
       - name: Install pnpm
         run: npm install -g pnpm@8
 
@@ -34,11 +37,18 @@ jobs:
         run: pnpm run build
         working-directory: typescript/packages/kaleido
 
+      - name: Package Rust crate
+        run: cargo package -p kaleido --locked
+
       # - name: Test
       #   run: npm test
       #   working-directory: typescript/packages/kaleido
 
+      - name: Publish Rust crate
+        run: cargo publish -p kaleido --locked
+        env:
+          CARGO_REGISTRY_TOKEN: ${{ secrets.CARGO_REGISTRY_TOKEN }}
+
       - name: Publish to npm
         run: pnpm publish --access public --no-git-checks
         working-directory: typescript/packages/kaleido
-

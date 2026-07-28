@@ -2,9 +2,11 @@
 ///
 /// Downstream crates add one dependency:
 /// ```toml
-/// kaleido = { git = "https://github.com/ericbutera/kaleido", branch = "main" }
+/// kaleido = "0.8"
 /// ```
-/// and import via `kaleido::auth::`, `kaleido::background_jobs::`, `kaleido::glass::`.
+/// and import via `kaleido::auth::`, `kaleido::background_jobs::`,
+/// `kaleido::glass::`, and `kaleido::migrations::`.
 pub mod auth;
 pub mod background_jobs;
 pub mod glass;
+pub mod migrations;
