@@ -37,17 +37,23 @@ jobs:
         run: pnpm run build
         working-directory: typescript/packages/kaleido
 
-      - name: Package Rust crate
-        run: cargo package -p kaleido --locked
-
       # - name: Test
       #   run: npm test
       #   working-directory: typescript/packages/kaleido
 
+      - name: Package Rust crate
+        run: cargo package -p kaleido --locked
+        working-directory: rust
+
+      - name: Authenticate to crates.io
+        id: cargo-auth
+        uses: rust-lang/crates-io-auth-action@v1
+
       - name: Publish Rust crate
         run: cargo publish -p kaleido --locked
+        working-directory: rust
         env:
-          CARGO_REGISTRY_TOKEN: ${{ secrets.CARGO_REGISTRY_TOKEN }}
+          CARGO_REGISTRY_TOKEN: ${{ steps.cargo-auth.outputs.token }}
 
       - name: Publish to npm
         run: pnpm publish --access public --no-git-checks

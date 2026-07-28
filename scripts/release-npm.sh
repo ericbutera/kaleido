@@ -5,6 +5,7 @@ PACKAGE_NAME="@ericbutera/kaleido"
 CARGO_PACKAGE_NAME="kaleido"
 PACKAGE_RELATIVE_PATH="typescript/packages/kaleido"
 RUST_PACKAGE_RELATIVE_PATH="rust/kaleido"
+RUST_WORKSPACE_RELATIVE_PATH="rust"
 
 usage() {
   cat <<'EOF'
@@ -24,6 +25,8 @@ Release safety:
   - refuses to release from an unpushed or out-of-date branch
   - exits without bumping if HEAD is already a pushed release tag
   - requires confirming the computed tag before creating it
+  - pushes a tag that publishes the npm package in GitHub Actions
+  - publishes the Rust crate in GitHub Actions after crates.io trusted publishing is configured
 EOF
 }
 
@@ -41,6 +44,7 @@ repo_root="$(cd "$script_dir/.." && pwd)"
 package_dir="$repo_root/$PACKAGE_RELATIVE_PATH"
 package_json="$package_dir/package.json"
 rust_manifest="$repo_root/$RUST_PACKAGE_RELATIVE_PATH/Cargo.toml"
+rust_workspace_dir="$repo_root/$RUST_WORKSPACE_RELATIVE_PATH"
 
 action="${1:-}"
 case "$action" in
@@ -205,15 +209,23 @@ run_package_checks() {
   (cd "$package_dir" && pnpm build)
 
   echo "Checking Rust formatting..."
-  (cd "$repo_root" && cargo fmt --all --check)
-
-  echo "Packaging Rust crate..."
-  (cd "$repo_root" && cargo package -p "$CARGO_PACKAGE_NAME" --locked)
+  (cd "$rust_workspace_dir" && cargo fmt --all --check)
 }
 
 refresh_rust_lockfile() {
   echo "Refreshing Rust lockfile..."
-  (cd "$repo_root" && cargo metadata --format-version 1 --no-deps >/dev/null)
+  (cd "$rust_workspace_dir" && cargo metadata --format-version 1 --no-deps >/dev/null)
+}
+
+run_rust_package_check() {
+  if [ "${SKIP_CHECKS:-}" = "1" ]; then
+    return
+  fi
+
+  require_cmd cargo
+
+  echo "Packaging Rust crate..."
+  (cd "$rust_workspace_dir" && cargo package -p "$CARGO_PACKAGE_NAME" --locked)
 }
 
 push_release_refs() {
@@ -291,9 +303,10 @@ confirm_tag "$tag"
 
 write_version "$next"
 refresh_rust_lockfile
-git add "$PACKAGE_RELATIVE_PATH/package.json" "$RUST_PACKAGE_RELATIVE_PATH/Cargo.toml" Cargo.lock
+run_rust_package_check
+git add "$PACKAGE_RELATIVE_PATH/package.json" "$RUST_PACKAGE_RELATIVE_PATH/Cargo.toml" "$RUST_WORKSPACE_RELATIVE_PATH/Cargo.lock"
 git commit -m "chore(release): $tag"
 git tag -a "$tag" -m "$tag"
 push_release_refs "$tag"
 
-echo "Created release $tag. GitHub Actions will publish $PACKAGE_NAME@$next from the tag."
+echo "Created release $tag. GitHub Actions will publish $PACKAGE_NAME@$next and $CARGO_PACKAGE_NAME@$next from the tag."

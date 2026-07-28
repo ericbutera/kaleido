@@ -2,6 +2,7 @@
 /rust/target/
 /rust/**/target/
 **/Cargo.lock
+!/rust/Cargo.lock
 *.pdb
 target/
 
