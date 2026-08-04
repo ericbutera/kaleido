@@ -214,7 +214,7 @@ run_package_checks() {
 
 refresh_rust_lockfile() {
   echo "Refreshing Rust lockfile..."
-  (cd "$rust_workspace_dir" && cargo metadata --format-version 1 --no-deps >/dev/null)
+  (cd "$rust_workspace_dir" && cargo update -p "$CARGO_PACKAGE_NAME" --offline)
 }
 
 run_rust_package_check() {
