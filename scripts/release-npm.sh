@@ -25,7 +25,7 @@ Release safety:
   - refuses to release from an unpushed or out-of-date branch
   - exits without bumping if HEAD is already a pushed release tag
   - requires confirming the computed tag before creating it
-  - pushes a tag that publishes the npm package and Rust crate in Woodpecker
+  - pushes a tag that publishes npm and Rust via GitHub Actions trusted publishing
 EOF
 }
 
@@ -308,4 +308,4 @@ git commit -m "chore(release): $tag"
 git tag -a "$tag" -m "$tag"
 push_release_refs "$tag"
 
-echo "Created release $tag. Woodpecker will publish $PACKAGE_NAME@$next and $CARGO_PACKAGE_NAME@$next from the tag."
+echo "Created release $tag. GitHub Actions will publish $PACKAGE_NAME@$next and $CARGO_PACKAGE_NAME@$next from the tag."

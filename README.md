@@ -51,9 +51,11 @@ task release:major
 ```
 
 The release task runs checks, bumps both package versions, commits, tags, and
-pushes. The tag workflow publishes npm and, after crates.io Trusted Publishing
-is configured for `publish.yml`, publishes the Rust crate without a stored
-crates.io token.
+pushes. The tag workflow publishes both npm and crates.io packages from GitHub
+Actions using registry trusted publishing. Woodpecker verifies the release tag,
+builds the TypeScript package, and packages the Rust crate, but it does not hold
+registry publish secrets because npm and crates.io trusted publishing do not
+support Woodpecker yet.
 
 ## License
 

@@ -19,21 +19,3 @@ steps:
     depends_on: [verify-release-tag]
     commands:
       - sh .woodpecker/package-rust.sh
-
-  - name: publish-rust
-    image: rust:1.93.0-bookworm
-    depends_on: [build-npm, package-rust]
-    environment:
-      CARGO_REGISTRY_TOKEN:
-        from_secret: cargo_registry_token
-    commands:
-      - sh .woodpecker/publish-rust.sh
-
-  - name: publish-npm
-    image: node:24-alpine
-    depends_on: [publish-rust]
-    environment:
-      NPM_TOKEN:
-        from_secret: npm_token
-    commands:
-      - sh .woodpecker/publish-npm.sh
