@@ -46,3 +46,18 @@ tasks:
     desc: Create and push a guarded Kaleido major release
     cmds:
       - bash scripts/release-npm.sh major
+
+  publish:patch:
+    desc: Alias for release:patch
+    cmds:
+      - task release:patch
+
+  publish:minor:
+    desc: Alias for release:minor
+    cmds:
+      - task release:minor
+
+  publish:major:
+    desc: Alias for release:major
+    cmds:
+      - task release:major
