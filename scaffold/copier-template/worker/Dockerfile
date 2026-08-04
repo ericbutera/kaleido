@@ -8,7 +8,7 @@ RUN cargo chef prepare --recipe-path recipe.json
 
 FROM chef AS builder
 COPY --from=planner /app/recipe.json recipe.json
-RUN cargo chef cook --release --recipe-path recipe.json --bin worker
+RUN cargo chef cook --release --recipe-path recipe.json
 COPY . .
 RUN sed -i '/^\[patch\."https:\/\/github\.com\/ericbutera\/kaleido"\]/,/^auth = { path/d' Cargo.toml
 RUN cargo build --release --bin worker
