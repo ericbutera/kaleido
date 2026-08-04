@@ -1,5 +1,6 @@
 import { Navigate, Outlet, useLocation } from "react-router-dom";
 import { useAuthApi } from "../../auth/lib/AuthContext";
+import { LoadingSpinner } from "../../components/common/QueryState";
 
 export default function Route() {
   const authApi = useAuthApi();
@@ -9,7 +10,7 @@ export default function Route() {
   if (isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <span className="loading loading-spinner loading-lg"></span>
+        <LoadingSpinner size="lg" />
       </div>
     );
   }

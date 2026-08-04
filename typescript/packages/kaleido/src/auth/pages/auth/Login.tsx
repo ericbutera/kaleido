@@ -3,6 +3,7 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { Link, useLocation, useNavigate } from "react-router-dom";
+import { ApiErrorAlert } from "../../../components/common/QueryState";
 import Layout from "../../components/auth/Layout";
 import OAuthProviderControls from "../../components/OAuthProviderControls";
 import SsoOnlyNotice from "../../components/SsoOnlyNotice";
@@ -80,9 +81,11 @@ function CredentialLogin() {
 
       <form onSubmit={handleSubmit(onSubmit)}>
         {errors.root && (
-          <div className="alert alert-error alert-soft mb-4">
-            <span>{errors.root.message}</span>
-          </div>
+          <ApiErrorAlert
+            error={null}
+            fallback={errors.root.message}
+            className="alert-soft mb-4"
+          />
         )}
 
         <fieldset className="fieldset">

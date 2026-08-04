@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import toast from "react-hot-toast";
 import { useNavigate, useSearchParams } from "react-router-dom";
+import { ApiErrorAlert } from "../../../components/common/QueryState";
 import Layout from "../../components/auth/Layout";
 import SsoOnlyNotice from "../../components/SsoOnlyNotice";
 import { useAuthApi, useAuthConfig } from "../../lib/AuthContext";
@@ -55,7 +56,7 @@ function VerifyToken() {
   return (
     <Layout>
       <h2 className="text-2xl font-bold mb-4">Verify Email</h2>
-      {error && <div className="alert alert-error mb-4">{error}</div>}
+      {error && <ApiErrorAlert error={null} fallback={error} className="mb-4" />}
       {done ? (
         <button className="btn btn-primary" onClick={() => navigate("/login")}>
           Sign In

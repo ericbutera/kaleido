@@ -1,4 +1,5 @@
 import { Navigate, useLocation } from "react-router-dom";
+import { LoadingSpinner } from "../../components/common/QueryState";
 import { useAuth } from "../lib/useAuth";
 
 export default function ProtectedRoute({
@@ -12,7 +13,7 @@ export default function ProtectedRoute({
   if (isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <span className="loading loading-spinner loading-lg"></span>
+        <LoadingSpinner size="lg" />
       </div>
     );
   }

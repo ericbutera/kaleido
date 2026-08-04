@@ -17,6 +17,16 @@ export * as components from "./components";
 export { default as GenericList } from "./components/common/GenericList";
 export type { Column, GenericListProps } from "./components/common/GenericList";
 export { default as Pagination } from "./components/common/Pagination";
+export { default as ReactQueryActivityIndicator } from "./components/common/ReactQueryActivityIndicator";
+export {
+  ApiErrorAlert,
+  ApiMutationErrors,
+  CenteredLoading,
+  ErrorCard,
+  LoadingCard,
+  LoadingSpinner,
+  QueryStateCard,
+} from "./components/common/QueryState";
 export { default as SortHeader } from "./components/common/SortHeader"; // TODO: combine with GenericList
 export {
   configureKaleido,
@@ -39,7 +49,7 @@ export {
   handleApiError,
   newQueryClient,
 } from "./lib/apiHelpers";
-export type { ApiError } from "./lib/apiHelpers";
+export type { ApiError, KaleidoQueryClientOptions } from "./lib/apiHelpers";
 export {
   buildApiQuery,
   parseParams,

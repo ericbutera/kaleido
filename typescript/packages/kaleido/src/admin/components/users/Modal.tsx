@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { useForm } from "react-hook-form";
 import toast from "react-hot-toast";
 import { handleFormError } from "../../../auth/lib/form";
+import { LoadingSpinner } from "../../../components/common/QueryState";
 import type { User, UserFormData } from "../../../users/useUsers";
 import {
   useDisableUserAccount,
@@ -187,9 +188,7 @@ export default function Modal({ selectedUser, onClose }: ModalProps) {
               Close
             </button>
             <button type="submit" className="btn btn-primary" disabled={isBusy}>
-              {isBusy && (
-                <span className="loading loading-spinner loading-xs"></span>
-              )}
+              {isBusy && <LoadingSpinner size="xs" />}
               Save
             </button>
           </div>

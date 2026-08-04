@@ -5,6 +5,7 @@ import type { ZodTypeAny } from "zod";
 import type { PaginatedQueryResult } from "../../lib/paginatedQuery";
 import { parseParams, toSearchParams } from "../../lib/params/paramsUtils";
 import Pagination from "./Pagination";
+import { CenteredLoading } from "./QueryState";
 
 export interface Column<T, P = any> {
   key: string; // unique key for the column
@@ -177,9 +178,7 @@ export default function GenericList<
         )}
 
         {isLoading ? (
-          <div className="flex justify-center items-center py-10">
-            <span className="loading loading-spinner loading-lg"></span>
-          </div>
+          <CenteredLoading size="lg" className="py-10" />
         ) : data.length === 0 ? (
           <div className="text-center py-8">{emptyMessage}</div>
         ) : (

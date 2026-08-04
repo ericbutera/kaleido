@@ -1,4 +1,4 @@
-import { MutationCache, QueryClient } from "@tanstack/react-query";
+import { MutationCache, QueryCache, QueryClient } from "@tanstack/react-query";
 import createFetchClientOrig from "openapi-fetch";
 import createClientOrig from "openapi-react-query";
 import toast from "react-hot-toast";
@@ -8,6 +8,16 @@ export type ApiError = {
   message?: string;
   errors?: Record<string, string[]>;
 };
+
+export type KaleidoQueryClientOptions = {
+  queryErrorToastThrottleMs?: number;
+  suppressQueryErrorToast?: (error: unknown) => boolean;
+  toast?: {
+    error: (message: string) => void;
+  };
+};
+
+const DEFAULT_QUERY_ERROR_TOAST_THROTTLE_MS = 30_000;
 
 export function handleApiError(err: any): ApiError {
   if (err?.status === "error") return err;
@@ -20,7 +30,35 @@ export function handleApiError(err: any): ApiError {
   };
 }
 
-export function newQueryClient(): QueryClient {
+function getHttpStatus(error: unknown) {
+  if (typeof error === "object" && error && "response" in error) {
+    const response = (error as { response?: { status?: unknown } }).response;
+    return typeof response?.status === "number" ? response.status : null;
+  }
+
+  return null;
+}
+
+function notifyApiError(
+  error: unknown,
+  toastApi: KaleidoQueryClientOptions["toast"],
+) {
+  const apiErr = handleApiError(error);
+  if (!apiErr.errors && apiErr.message) {
+    toastApi?.error(apiErr.message);
+  }
+  console.error(`[API Error] ${apiErr.message}`, apiErr.errors);
+}
+
+export function newQueryClient(
+  options: KaleidoQueryClientOptions = {},
+): QueryClient {
+  const queryErrorToastTimes = new Map<string, number>();
+  const queryErrorToastThrottleMs =
+    options.queryErrorToastThrottleMs ??
+    DEFAULT_QUERY_ERROR_TOAST_THROTTLE_MS;
+  const toastApi = options.toast ?? toast;
+
   return new QueryClient({
     defaultOptions: {
       queries: {
@@ -29,13 +67,31 @@ export function newQueryClient(): QueryClient {
         staleTime: 5 * 60 * 1000,
       },
     },
+    queryCache: new QueryCache({
+      onError: (error, query) => {
+        if (
+          getHttpStatus(error) === 401 ||
+          options.suppressQueryErrorToast?.(error) ||
+          (query.meta as { suppressGlobalErrorToast?: boolean } | undefined)
+            ?.suppressGlobalErrorToast
+        ) {
+          return;
+        }
+
+        const now = Date.now();
+        const lastToastAt = queryErrorToastTimes.get(query.queryHash) ?? 0;
+
+        if (now - lastToastAt < queryErrorToastThrottleMs) {
+          return;
+        }
+
+        queryErrorToastTimes.set(query.queryHash, now);
+        notifyApiError(error, toastApi);
+      },
+    }),
     mutationCache: new MutationCache({
       onError: (error) => {
-        const apiErr = handleApiError(error);
-        if (!apiErr.errors && apiErr.message) {
-          toast.error(apiErr.message);
-        }
-        console.error(`[Mutation Error] ${apiErr.message}`, apiErr.errors);
+        notifyApiError(error, toastApi);
       },
     }),
   });

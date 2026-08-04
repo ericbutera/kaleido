@@ -1,5 +1,6 @@
 import type { ReactNode } from "react";
 import type { FieldValues, UseFormHandleSubmit } from "react-hook-form";
+import { LoadingSpinner } from "./QueryState";
 
 export interface GenericFormModalProps<TFormData extends FieldValues> {
   // Modal state
@@ -68,9 +69,7 @@ export default function GenericFormModal<TFormData extends FieldValues>({
       >
         <h3 className="font-bold text-lg mb-4">
           {title}
-          {isLoading && (
-            <span className="loading loading-spinner loading-xs ml-2"></span>
-          )}
+          {isLoading && <LoadingSpinner size="xs" className="ml-2" />}
         </h3>
 
         {uploadProgress !== undefined &&
@@ -106,9 +105,7 @@ export default function GenericFormModal<TFormData extends FieldValues>({
               className="btn btn-primary"
               disabled={isLoading}
             >
-              {isLoading && (
-                <span className="loading loading-spinner loading-xs"></span>
-              )}
+              {isLoading && <LoadingSpinner size="xs" />}
               {submitLabel}
             </button>
           </div>
