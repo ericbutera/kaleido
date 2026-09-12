@@ -9,15 +9,14 @@ Generated project layout:
 - `worker`
 - `ui-next` (Next.js)
 - Production and dev Dockerfiles for runtime services
-- `.tool-versions` for asdf-managed external tools
+- `mise.toml` for external tools and task runner commands
 
-Generated projects are expected to use `task` as the human-facing command runner:
+Generated projects are expected to use `mise run` as the human-facing command runner:
 
 ```sh
-task dev
-task ui-next:dev
-task api:dev
-task worker:dev
+mise run ui-next:dev
+mise run api:dev
+mise run worker:dev
 ```
 
 ## Copier usage (recommended)
@@ -25,9 +24,7 @@ task worker:dev
 Install Copier:
 
 ```bash
-# using asdf-vm:
-# asdf plugin add copier
-# asdf install copier latest
+mise x copier -- copier --version
 # or:
 pipx install copier
 ```

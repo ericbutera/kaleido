@@ -13,8 +13,8 @@ The Rust crate exports `auth`, `background_jobs`, `glass`, and `migrations`.
 ## Development
 
 ```sh
-task build
-task typecheck
+mise run build
+mise run typecheck
 ```
 
 Rust-only work:
@@ -44,10 +44,10 @@ source alias or mounted package setup.
 Versions are kept aligned across the Rust crate and TypeScript package.
 
 ```sh
-task release:status
-task release:patch
-task release:minor
-task release:major
+mise run release:status
+mise run release:patch
+mise run release:minor
+mise run release:major
 ```
 
 The release task runs checks, bumps both package versions, commits, tags, and

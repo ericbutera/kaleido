@@ -26,8 +26,8 @@ _message_after_copy: |
   1) cd [[ _copier_conf.dst_path ]]
   2) git init
   3) git add . && git commit -m "Initial scaffold"
-  4) task dev
-  5) task ui-next:dev
+  4) mise trust
+  5) mise run ui-next:dev
 
   Later upgrades:
   copier update
