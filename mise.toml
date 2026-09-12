@@ -47,23 +47,27 @@ run = "node -p \"require('./package.json').version\""
 
 [tasks."release:status"]
 description = "Show current release state"
-run = "bash scripts/release-npm.sh status"
+run = "bash scripts/release.sh status"
+
+[tasks.release]
+description = "Create and push a guarded Kaleido patch release"
+run = "bash scripts/release.sh patch"
 
 [tasks."release:patch"]
 description = "Create and push a guarded Kaleido patch release"
-run = "bash scripts/release-npm.sh patch"
+run = "bash scripts/release.sh patch"
 
 [tasks."release:minor"]
 description = "Create and push a guarded Kaleido minor release"
-run = "bash scripts/release-npm.sh minor"
+run = "bash scripts/release.sh minor"
 
 [tasks."release:major"]
 description = "Create and push a guarded Kaleido major release"
-run = "bash scripts/release-npm.sh major"
+run = "bash scripts/release.sh major"
 
 [tasks."publish:patch"]
 description = "Alias for release:patch"
-run = "mise run release:patch"
+run = "mise run release"
 
 [tasks."publish:minor"]
 description = "Alias for release:minor"

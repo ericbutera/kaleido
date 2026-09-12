@@ -10,10 +10,10 @@ RUST_WORKSPACE_RELATIVE_PATH="rust"
 usage() {
   cat <<'EOF'
 Usage:
-  scripts/release-npm.sh status
-  scripts/release-npm.sh patch
-  scripts/release-npm.sh minor
-  scripts/release-npm.sh major
+  scripts/release.sh status
+  scripts/release.sh patch
+  scripts/release.sh minor
+  scripts/release.sh major
 
 Optional:
   CONFIRM=vX.Y.Z        Skip the interactive tag confirmation.
@@ -213,7 +213,7 @@ run_package_checks() {
 
 refresh_rust_lockfile() {
   echo "Refreshing Rust lockfile..."
-  (cd "$rust_workspace_dir" && cargo update -p "$CARGO_PACKAGE_NAME" --offline)
+  (cd "$rust_workspace_dir" && cargo update -p "$CARGO_PACKAGE_NAME")
 }
 
 run_rust_package_check() {
@@ -224,7 +224,7 @@ run_rust_package_check() {
   require_cmd cargo
 
   echo "Packaging Rust crate..."
-  (cd "$rust_workspace_dir" && cargo package -p "$CARGO_PACKAGE_NAME" --locked)
+  (cd "$rust_workspace_dir" && cargo package -p "$CARGO_PACKAGE_NAME" --locked --allow-dirty)
 }
 
 push_release_refs() {
