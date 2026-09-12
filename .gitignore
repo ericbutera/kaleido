@@ -25,7 +25,8 @@ yarn.lock
 *.dylib
 
 # IDE
-.vscode/
+.vscode/*
+!.vscode/settings.json
 .idea/
 *.swp
 *.swo

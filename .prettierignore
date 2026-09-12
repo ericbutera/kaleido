@@ -1,0 +1,6 @@
+node_modules/
+typescript/packages/kaleido/dist/
+typescript/packages/kaleido/node_modules/
+typescript/packages/kaleido/scaffold/copier-template/ui-next/.next/
+typescript/packages/kaleido/scaffold/copier-template/ui-next/dist/
+typescript/packages/kaleido/scaffold/copier-template/ui-next/node_modules/
