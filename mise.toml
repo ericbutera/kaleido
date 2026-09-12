@@ -40,20 +40,11 @@ description = "Typecheck the Kaleido TypeScript package"
 dir = "typescript/packages/kaleido"
 run = "pnpm typecheck"
 
-[tasks.version]
-description = "Print the current Kaleido TypeScript package version"
-dir = "typescript/packages/kaleido"
-run = "node -p \"require('./package.json').version\""
-
 [tasks."release:status"]
 description = "Show current release state"
 run = "bash scripts/release.sh status"
 
 [tasks.release]
-description = "Create and push a guarded Kaleido patch release"
-run = "bash scripts/release.sh patch"
-
-[tasks."release:patch"]
 description = "Create and push a guarded Kaleido patch release"
 run = "bash scripts/release.sh patch"
 
@@ -64,15 +55,3 @@ run = "bash scripts/release.sh minor"
 [tasks."release:major"]
 description = "Create and push a guarded Kaleido major release"
 run = "bash scripts/release.sh major"
-
-[tasks."publish:patch"]
-description = "Alias for release:patch"
-run = "mise run release"
-
-[tasks."publish:minor"]
-description = "Alias for release:minor"
-run = "mise run release:minor"
-
-[tasks."publish:major"]
-description = "Alias for release:major"
-run = "mise run release:major"

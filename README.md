@@ -50,24 +50,15 @@ source alias or mounted package setup.
 Versions are kept aligned across the Rust crate and TypeScript package.
 
 ```sh
-# normal patch release
 mise run release
-
-# inspect release state
 mise run release:status
-
-# explicit bump levels
-mise run release:patch
 mise run release:minor
 mise run release:major
 ```
 
-The release task runs checks, bumps both package versions, commits, tags, and
-pushes. The tag workflow publishes both npm and crates.io packages from GitHub
-Actions using registry trusted publishing. Woodpecker verifies the release tag,
-builds the TypeScript package, and packages the Rust crate, but it does not hold
-registry publish secrets because npm and crates.io trusted publishing do not
-support Woodpecker yet.
+`mise run release` creates a guarded patch release. It runs checks, bumps the
+Rust crate and TypeScript package together, commits, tags, and pushes. The tag
+workflow publishes both packages.
 
 ## License
 
