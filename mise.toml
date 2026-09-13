@@ -45,6 +45,10 @@ description = "Show current release state"
 run = "bash scripts/release.sh status"
 
 [tasks.release]
+description = "Alias for release:patch"
+run = "bash scripts/release.sh patch"
+
+[tasks."release:patch"]
 description = "Create and push a guarded Kaleido patch release"
 run = "bash scripts/release.sh patch"
 
