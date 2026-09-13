@@ -104,7 +104,7 @@ impl TaskWorker {
     }
 
     async fn process_batch(&self) -> Result<usize, WorkerError> {
-        let batch_span = tracing::debug_span!(
+        let batch_span = tracing::info_span!(
             "background_task.poll",
             task.batch_size = self.batch_size,
             task.count = tracing::field::Empty,
