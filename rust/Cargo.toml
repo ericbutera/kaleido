@@ -30,7 +30,7 @@ futures = "0.3"
 
 # Database
 sqlx = { version = "0.8", features = ["runtime-tokio-rustls", "postgres"] }
-sea-orm = { version = "2.0.0-rc.27", features = ["sqlx-postgres", "runtime-tokio-rustls", "macros"] }
+sea-orm = { version = "2.0.0-rc.27", features = ["sqlx-postgres", "runtime-tokio-rustls", "macros", "tracing-spans"] }
 sea-orm-migration = { version = "2.0.0-rc.27", features = ["runtime-tokio-native-tls", "sqlx-postgres", "sqlx-sqlite"] }
 
 # Web framework

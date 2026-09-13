@@ -11,6 +11,7 @@ use oauth2::{
 use sea_orm::{ActiveModelTrait, ColumnTrait, DatabaseConnection, EntityTrait, QueryFilter, Set};
 use serde::{Deserialize, Serialize};
 use std::env;
+use tracing::Instrument;
 use uuid::Uuid;
 
 #[derive(Debug, Serialize)]
@@ -119,31 +120,49 @@ impl OAuthService {
         code: String,
         api_url: &str,
     ) -> Result<OAuthUserInfo, AuthError> {
-        let cfg = provider_settings::get_provider_config(provider, api_url).await?;
-        let client = Self::create_client_from_config(cfg.clone())?;
+        async move {
+            let cfg = provider_settings::get_provider_config(provider, api_url).await?;
+            let client = Self::create_client_from_config(cfg.clone())?;
 
-        // Exchange the code for an access token
-        let token_result = client
-            .exchange_code(AuthorizationCode::new(code))
-            .request_async(async_http_client)
-            .await
-            .map_err(|e| AuthError::internal_error(format!("Token exchange failed: {}", e)))?;
+            let token_span = tracing::info_span!("oauth.token_exchange", oauth.provider = provider);
+            let token_result = client
+                .exchange_code(AuthorizationCode::new(code))
+                .request_async(async_http_client)
+                .instrument(token_span)
+                .await
+                .map_err(|e| AuthError::internal_error(format!("Token exchange failed: {}", e)))?;
 
-        let user_info: OAuthUserInfo = reqwest::Client::new()
-            .get(&cfg.userinfo_url)
-            .bearer_auth(token_result.access_token().secret())
-            .send()
-            .await
-            .map_err(|e| AuthError::internal_error(format!("Failed to fetch user info: {}", e)))?
-            .json()
-            .await
-            .map_err(|e| AuthError::internal_error(format!("Failed to parse user info: {}", e)))?;
+            let userinfo_span =
+                tracing::info_span!("oauth.userinfo.fetch", oauth.provider = provider);
+            let user_info: OAuthUserInfo = async {
+                reqwest::Client::new()
+                    .get(&cfg.userinfo_url)
+                    .bearer_auth(token_result.access_token().secret())
+                    .send()
+                    .await
+                    .map_err(|e| {
+                        AuthError::internal_error(format!("Failed to fetch user info: {}", e))
+                    })?
+                    .json()
+                    .await
+                    .map_err(|e| {
+                        AuthError::internal_error(format!("Failed to parse user info: {}", e))
+                    })
+            }
+            .instrument(userinfo_span)
+            .await?;
 
-        if user_info.verified_email == Some(false) {
-            return Err(AuthError::validation("Email not verified by provider"));
+            if user_info.verified_email == Some(false) {
+                return Err(AuthError::validation("Email not verified by provider"));
+            }
+
+            Ok(user_info)
         }
-
-        Ok(user_info)
+        .instrument(tracing::info_span!(
+            "oauth.exchange_code",
+            oauth.provider = provider
+        ))
+        .await
     }
 
     /// Find or create user from an OAuth/OIDC provider.
@@ -152,57 +171,69 @@ impl OAuthService {
         provider: &str,
         provider_user: OAuthUserInfo,
     ) -> Result<users::Model, AuthError> {
-        // First, try to find user by provider subject.
-        if let Some(user) = Users::find()
-            .filter(users::Column::OauthSubject.eq(&provider_user.subject))
-            .filter(users::Column::OauthProvider.eq(provider))
-            .one(db)
-            .await
-            .map_err(|e| AuthError::internal_error(format!("Database error: {}", e)))?
-        {
-            return Ok(user);
-        }
+        let span = tracing::info_span!(
+            "oauth.user.resolve",
+            oauth.provider = provider,
+            auth.user_resolution = tracing::field::Empty,
+        );
 
-        // Second, try to find user by email and link this provider.
-        if let Some(mut user) = Users::find()
-            .filter(users::Column::Email.eq(&provider_user.email))
-            .one(db)
-            .await
-            .map_err(|e| AuthError::internal_error(format!("Database error: {}", e)))?
-        {
-            // Link provider account to existing user.
-            let mut active_user: users::ActiveModel = user.clone().into();
-            active_user.oauth_subject = Set(Some(provider_user.subject));
-            active_user.oauth_provider = Set(Some(provider.to_string()));
-
-            user = active_user
-                .update(db)
+        async {
+            // First, try to find user by provider subject.
+            if let Some(user) = Users::find()
+                .filter(users::Column::OauthSubject.eq(&provider_user.subject))
+                .filter(users::Column::OauthProvider.eq(provider))
+                .one(db)
                 .await
-                .map_err(|e| AuthError::internal_error(format!("Failed to update user: {}", e)))?;
+                .map_err(|e| AuthError::internal_error(format!("Database error: {}", e)))?
+            {
+                span.record("auth.user_resolution", "matched_provider_subject");
+                return Ok(user);
+            }
 
-            return Ok(user);
+            // Second, try to find user by email and link this provider.
+            if let Some(mut user) = Users::find()
+                .filter(users::Column::Email.eq(&provider_user.email))
+                .one(db)
+                .await
+                .map_err(|e| AuthError::internal_error(format!("Database error: {}", e)))?
+            {
+                // Link provider account to existing user.
+                let mut active_user: users::ActiveModel = user.clone().into();
+                active_user.oauth_subject = Set(Some(provider_user.subject));
+                active_user.oauth_provider = Set(Some(provider.to_string()));
+
+                user = active_user.update(db).await.map_err(|e| {
+                    AuthError::internal_error(format!("Failed to update user: {}", e))
+                })?;
+
+                span.record("auth.user_resolution", "linked_existing_email");
+                return Ok(user);
+            }
+
+            // Create new OAuth-only user.
+            let display_name = provider_user.display_name();
+            let new_user = users::ActiveModel {
+                pid: Set(Uuid::new_v4()),
+                email: Set(provider_user.email.clone()),
+                password: Set(None), // OAuth users don't have a password
+                oauth_subject: Set(Some(provider_user.subject)),
+                oauth_provider: Set(Some(provider.to_string())),
+                name: Set(display_name),
+                email_verified_at: Set(Some(chrono::Utc::now())), // provider verified the email
+                api_key: Set(Uuid::new_v4().to_string()),
+                ..Default::default()
+            };
+
+            let user = new_user
+                .insert(db)
+                .await
+                .map_err(|e| AuthError::internal_error(format!("Failed to create user: {}", e)))?;
+
+            span.record("auth.user_resolution", "created_user");
+            Ok(user)
         }
-
-        // Create new OAuth-only user.
-        let display_name = provider_user.display_name();
-        let new_user = users::ActiveModel {
-            pid: Set(Uuid::new_v4()),
-            email: Set(provider_user.email.clone()),
-            password: Set(None), // OAuth users don't have a password
-            oauth_subject: Set(Some(provider_user.subject)),
-            oauth_provider: Set(Some(provider.to_string())),
-            name: Set(display_name),
-            email_verified_at: Set(Some(chrono::Utc::now())), // provider verified the email
-            api_key: Set(Uuid::new_v4().to_string()),
-            ..Default::default()
-        };
-
-        let user = new_user
-            .insert(db)
-            .await
-            .map_err(|e| AuthError::internal_error(format!("Failed to create user: {}", e)))?;
-
-        Ok(user)
+        .instrument(span.clone())
+        .await
     }
 
     /// Build the synthetic provider user used by the explicitly-enabled local dev provider.

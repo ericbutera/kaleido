@@ -71,6 +71,15 @@ impl EmailService {
         html_body: String,
         idempotency_key: Option<String>,
     ) -> Result<(), Box<dyn Error + Send + Sync>> {
+        let span = tracing::info_span!(
+            "email.send",
+            email.transport = "smtp",
+            email.has_idempotency_key = idempotency_key.is_some(),
+            email.status = tracing::field::Empty,
+            error = tracing::field::Empty,
+        );
+        let _guard = span.enter();
+
         let from_mailbox = Mailbox::new(Some(self.from_name.clone()), self.from_email.parse()?);
         let to_mailbox: Mailbox = to.parse()?;
 
@@ -99,10 +108,13 @@ impl EmailService {
 
         match self.transport.send(&email) {
             Ok(_) => {
+                span.record("email.status", "sent");
                 info!(to, "Email sent successfully");
                 Ok(())
             }
             Err(error) => {
+                span.record("email.status", "failed");
+                span.record("error", error.to_string().as_str());
                 warn!(to, %error, "Failed to send email");
                 Err(Box::new(error))
             }

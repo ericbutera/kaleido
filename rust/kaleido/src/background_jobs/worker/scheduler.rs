@@ -1,5 +1,6 @@
 use cron::Schedule;
 use std::future::Future;
+use tracing::Instrument;
 
 pub fn spawn_scheduler<F, Fut>(schedule_expression: Option<&str>, mut enqueue: F)
 where
@@ -29,7 +30,13 @@ where
 
             tokio::time::sleep(sleep_for).await;
 
-            if let Err(error) = enqueue().await {
+            let span = tracing::info_span!(
+                "background_task.schedule.enqueue",
+                schedule.expression = expression.as_str(),
+                schedule.due_at = %datetime,
+            );
+
+            if let Err(error) = enqueue().instrument(span).await {
                 tracing::error!(%error, "scheduled enqueue failed");
             }
         }

@@ -1,5 +1,6 @@
 use crate::auth::error::AuthError;
 use std::env;
+use tracing::Instrument;
 use url::Url;
 
 /// Known provider identifiers
@@ -168,18 +169,29 @@ async fn discover_oidc_endpoints(issuer_url: &str) -> Result<ProviderEndpoints, 
     url.set_query(None);
     url.set_fragment(None);
 
-    let document: OidcDiscoveryDocument = reqwest::Client::new()
-        .get(url)
-        .send()
-        .await
-        .map_err(|err| AuthError::internal_error(format!("OIDC discovery request failed: {err}")))?
-        .error_for_status()
-        .map_err(|err| AuthError::internal_error(format!("OIDC discovery failed: {err}")))?
-        .json()
-        .await
-        .map_err(|err| {
-            AuthError::internal_error(format!("Invalid OIDC discovery document: {err}"))
-        })?;
+    let span = tracing::info_span!(
+        "oauth.oidc.discovery",
+        server.address = url.host_str().unwrap_or_default(),
+    );
+
+    let document: OidcDiscoveryDocument = async {
+        reqwest::Client::new()
+            .get(url)
+            .send()
+            .await
+            .map_err(|err| {
+                AuthError::internal_error(format!("OIDC discovery request failed: {err}"))
+            })?
+            .error_for_status()
+            .map_err(|err| AuthError::internal_error(format!("OIDC discovery failed: {err}")))?
+            .json()
+            .await
+            .map_err(|err| {
+                AuthError::internal_error(format!("Invalid OIDC discovery document: {err}"))
+            })
+    }
+    .instrument(span)
+    .await?;
 
     Ok(ProviderEndpoints {
         auth_url: document.authorization_endpoint,

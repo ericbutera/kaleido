@@ -2,7 +2,7 @@ use crate::background_jobs::error::TaskError;
 use crate::background_jobs::storage::{TaskRecord, TaskStorage};
 use chrono::Utc;
 use std::sync::Arc;
-use tracing::debug;
+use tracing::{debug, Instrument};
 
 /// TaskQueue provides a high-level interface for enqueuing and managing background tasks
 pub struct TaskQueue<S: TaskStorage> {
@@ -33,19 +33,33 @@ impl<S: TaskStorage> TaskQueue<S> {
         scheduled_for: Option<chrono::DateTime<Utc>>,
         max_attempts: i32,
     ) -> Result<TaskRecord, TaskError> {
-        let payload = serde_json::to_value(&task)?;
-
-        let task_record = self
-            .storage
-            .enqueue(task_type.clone(), payload, scheduled_for, max_attempts)
-            .await?;
-
-        debug!(
-            "Task enqueued successfully: id={}, type={}",
-            task_record.id, task_type
+        let span = tracing::info_span!(
+            "background_task.enqueue",
+            task.type = task_type.as_str(),
+            task.scheduled = scheduled_for.is_some(),
+            task.max_attempts = max_attempts,
+            task.id = tracing::field::Empty,
         );
+        let span_for_records = span.clone();
 
-        Ok(task_record)
+        async move {
+            let payload = serde_json::to_value(&task)?;
+
+            let task_record = self
+                .storage
+                .enqueue(task_type.clone(), payload, scheduled_for, max_attempts)
+                .await?;
+
+            span_for_records.record("task.id", task_record.id.as_str());
+            debug!(
+                "Task enqueued successfully: id={}, type={}",
+                task_record.id, task_type
+            );
+
+            Ok(task_record)
+        }
+        .instrument(span.clone())
+        .await
     }
 
     /// Find pending tasks ready to be processed

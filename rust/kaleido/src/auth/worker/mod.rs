@@ -6,6 +6,7 @@ use lettre::transport::smtp::authentication::Credentials;
 use lettre::{AsyncSmtpTransport, AsyncTransport, Message, Tokio1Executor};
 use serde_json::json;
 use std::collections::HashMap;
+use tracing::Instrument;
 
 pub mod tasks;
 
@@ -111,37 +112,50 @@ impl AuthEmailProcessorRuntime {
         text_body: String,
         html_body: String,
     ) -> Result<(), WorkerError> {
-        let to_mailbox = Mailbox::new(
-            None,
-            to.parse()
-                .map_err(|e| format!("invalid recipient email '{}': {}", to, e))?,
+        let span = tracing::info_span!(
+            "email.send",
+            email.transport = "smtp",
+            email.status = tracing::field::Empty,
+            error = tracing::field::Empty,
         );
 
-        let email = Message::builder()
-            .from(self.from_mailbox.clone())
-            .to(to_mailbox)
-            .subject(subject)
-            .multipart(
-                MultiPart::alternative()
-                    .singlepart(
-                        SinglePart::builder()
-                            .header(ContentType::TEXT_PLAIN)
-                            .body(text_body),
-                    )
-                    .singlepart(
-                        SinglePart::builder()
-                            .header(ContentType::TEXT_HTML)
-                            .body(html_body),
-                    ),
-            )
-            .map_err(|e| format!("failed to build email message: {}", e))?;
+        async {
+            let to_mailbox = Mailbox::new(
+                None,
+                to.parse()
+                    .map_err(|e| format!("invalid recipient email '{}': {}", to, e))?,
+            );
 
-        self.mailer
-            .send(email)
-            .await
-            .map_err(|e| format!("failed to send email: {}", e))?;
+            let email = Message::builder()
+                .from(self.from_mailbox.clone())
+                .to(to_mailbox)
+                .subject(subject)
+                .multipart(
+                    MultiPart::alternative()
+                        .singlepart(
+                            SinglePart::builder()
+                                .header(ContentType::TEXT_PLAIN)
+                                .body(text_body),
+                        )
+                        .singlepart(
+                            SinglePart::builder()
+                                .header(ContentType::TEXT_HTML)
+                                .body(html_body),
+                        ),
+                )
+                .map_err(|e| format!("failed to build email message: {}", e))?;
 
-        Ok(())
+            self.mailer.send(email).await.map_err(|e| {
+                span.record("email.status", "failed");
+                span.record("error", e.to_string().as_str());
+                format!("failed to send email: {}", e)
+            })?;
+
+            span.record("email.status", "sent");
+            Ok(())
+        }
+        .instrument(span.clone())
+        .await
     }
 }
 
