@@ -46,7 +46,7 @@ function ResendConfirmationForm() {
       <form onSubmit={handleSubmit(onSubmit)}>
         <label className="label">Email</label>
         <input
-          className="input input-bordered w-full"
+          className="input w-full"
           {...register("email", {
             required: "Email is required",
           })}

@@ -123,13 +123,13 @@ function CredentialSignUp() {
           <legend className="fieldset-legend">Account Details</legend>
 
           <label className="label" htmlFor="signup-name">
-            <span className="label-text">Name</span>
+            <span>Name</span>
           </label>
           <input
             id="signup-name"
             type="text"
             placeholder="Your Name"
-            className={`input input-bordered w-full ${errors.name ? "input-error" : ""}`}
+            className={`input w-full ${errors.name ? "input-error" : ""}`}
             {...register("name", {
               required: "Name is required",
               minLength: {
@@ -143,13 +143,13 @@ function CredentialSignUp() {
           )}
 
           <label className="label" htmlFor="signup-email">
-            <span className="label-text">Email</span>
+            <span>Email</span>
           </label>
           <input
             id="signup-email"
             type="email"
             placeholder="email@example.com"
-            className={`input input-bordered w-full ${errors.email ? "input-error" : ""}`}
+            className={`input w-full ${errors.email ? "input-error" : ""}`}
             {...register("email", {
               required: "Email is required",
               pattern: {
@@ -163,13 +163,13 @@ function CredentialSignUp() {
           )}
 
           <label className="label" htmlFor="signup-password">
-            <span className="label-text">Password</span>
+            <span>Password</span>
           </label>
           <input
             id="signup-password"
             type="password"
             placeholder="••••••••"
-            className={`input input-bordered w-full ${errors.password ? "input-error" : ""}`}
+            className={`input w-full ${errors.password ? "input-error" : ""}`}
             {...register("password", {
               required: "Password is required",
               minLength: {
@@ -185,13 +185,13 @@ function CredentialSignUp() {
           )}
 
           <label className="label" htmlFor="signup-confirm">
-            <span className="label-text">Confirm Password</span>
+            <span>Confirm Password</span>
           </label>
           <input
             id="signup-confirm"
             type="password"
             placeholder="Confirm password"
-            className={`input input-bordered w-full ${errors.confirmPassword ? "input-error" : ""}`}
+            className={`input w-full ${errors.confirmPassword ? "input-error" : ""}`}
             {...register("confirmPassword", {
               required: "Please confirm password",
               validate: (val) =>

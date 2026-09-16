@@ -9,11 +9,7 @@ import { GenericList, type Column } from "../../../components";
 import { displayLocalDateTime } from "../../../lib/date";
 import type { PaginatedQueryResult } from "../../../lib/paginatedQuery";
 import type { Task } from "../../../tasks/useTasks";
-import {
-  useCancelTask,
-  useRerunTask,
-  useTasks,
-} from "../../../tasks/useTasks";
+import { useCancelTask, useRerunTask, useTasks } from "../../../tasks/useTasks";
 import { TasksSchema, type TasksParams } from "../../params/TasksParams";
 
 interface ListProps {
@@ -83,8 +79,10 @@ function enhanceTasks(tasks: Task[]): TaskWithDuration[] {
 
   for (const group of byType.values()) {
     const ordered = [...group].sort((a, b) => {
-      const aTime = parseTimestamp(a.started_at) ?? parseTimestamp(a.created_at) ?? 0;
-      const bTime = parseTimestamp(b.started_at) ?? parseTimestamp(b.created_at) ?? 0;
+      const aTime =
+        parseTimestamp(a.started_at) ?? parseTimestamp(a.created_at) ?? 0;
+      const bTime =
+        parseTimestamp(b.started_at) ?? parseTimestamp(b.created_at) ?? 0;
       return aTime - bTime;
     });
 
@@ -142,7 +140,9 @@ export default function List({ setSelectedTask }: ListProps) {
       key: "duration",
       header: "Duration",
       render: (t) => (
-        <span title={t.duration_ms ? `${Math.round(t.duration_ms / 1000)}s` : ""}>
+        <span
+          title={t.duration_ms ? `${Math.round(t.duration_ms / 1000)}s` : ""}
+        >
           {formatDuration(t.duration_ms)}
         </span>
       ),
@@ -251,12 +251,12 @@ export default function List({ setSelectedTask }: ListProps) {
             type="search"
             placeholder="Filter error text"
             // set width to smaller size
-            className="input input-sm input-bordered w-40"
+            className="input input-sm w-40"
             value={params.q || ""}
             onChange={(e) => setFilter("q", e.target.value)}
           />
           <select
-            className="select select-sm select-bordered w-40"
+            className="select select-sm w-40"
             value={params.task_type || ""}
             onChange={(e) => setFilter("task_type", e.target.value)}
           >
@@ -268,7 +268,7 @@ export default function List({ setSelectedTask }: ListProps) {
             <option value="zip_import">Zip Import</option>
           </select>
           <select
-            className="select select-sm select-bordered w-40"
+            className="select select-sm w-40"
             value={params.status || ""}
             onChange={(e) => setFilter("status", e.target.value)}
           >
@@ -283,7 +283,7 @@ export default function List({ setSelectedTask }: ListProps) {
           <input
             type="date"
             title="From"
-            className="input input-sm input-bordered w-40"
+            className="input input-sm w-40"
             value={params.from_date ? params.from_date.split("T")[0] : ""}
             onChange={(e) => {
               const date = e.target.value
@@ -295,7 +295,7 @@ export default function List({ setSelectedTask }: ListProps) {
           <input
             type="date"
             title="To"
-            className="input input-sm input-bordered w-40"
+            className="input input-sm w-40"
             value={params.to_date ? params.to_date.split("T")[0] : ""}
             onChange={(e) => {
               const date = e.target.value

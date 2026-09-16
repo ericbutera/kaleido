@@ -90,13 +90,13 @@ function CredentialLogin() {
 
         <fieldset className="fieldset">
           <label className="label" htmlFor="login-email">
-            <span className="label-text">Email</span>
+            <span>Email</span>
           </label>
           <input
             id="login-email"
             type="email"
             placeholder="email@example.com"
-            className={`input input-bordered w-full ${errors.email ? "input-error" : ""}`}
+            className={`input w-full ${errors.email ? "input-error" : ""}`}
             {...register("email", { required: "Email is required" })}
           />
           {errors.email && (
@@ -104,13 +104,13 @@ function CredentialLogin() {
           )}
 
           <label className="label mt-4" htmlFor="login-password">
-            <span className="label-text">Password</span>
+            <span>Password</span>
           </label>
           <input
             id="login-password"
             type="password"
             placeholder="••••••••"
-            className={`input input-bordered w-full ${errors.password ? "input-error" : ""}`}
+            className={`input w-full ${errors.password ? "input-error" : ""}`}
             minLength={6}
             {...register("password", { required: "Password is required" })}
           />

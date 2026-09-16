@@ -39,7 +39,7 @@ function ForgotPasswordForm() {
       <form onSubmit={handleSubmit(onSubmit)}>
         <label className="label">Email</label>
         <input
-          className="input input-bordered w-full"
+          className="input w-full"
           {...register("email", { required: true })}
         />
         <button className="btn btn-primary mt-4">Send Reset</button>

@@ -111,16 +111,14 @@ export default function Modal({ selectedUser, onClose }: ModalProps) {
   return (
     <div className="modal modal-open" role="dialog" onClick={onClose}>
       <div className="modal-box max-w-2xl" onClick={(e) => e.stopPropagation()}>
-        <h3 className="font-bold text-lg mb-4">
-          Edit User #{selectedUserId}
-        </h3>
+        <h3 className="font-bold text-lg mb-4">Edit User #{selectedUserId}</h3>
 
         <form onSubmit={handleSubmit(handleSave)} className="space-y-4">
           <label className="form-control w-full">
-            <span className="label-text">Email</span>
+            <span>Email</span>
             <input
               type="email"
-              className="input input-bordered w-full"
+              className="input w-full"
               {...register("email", {
                 required: "Email is required",
               })}
@@ -138,10 +136,10 @@ export default function Modal({ selectedUser, onClose }: ModalProps) {
           </label>
 
           <label className="form-control w-full">
-            <span className="label-text">Name</span>
+            <span>Name</span>
             <input
               type="text"
-              className="input input-bordered w-full"
+              className="input w-full"
               {...register("name")}
               disabled={isBusy}
             />
@@ -161,7 +159,7 @@ export default function Modal({ selectedUser, onClose }: ModalProps) {
               {...register("is_admin")}
               disabled={isBusy}
             />
-            <span className="label-text">Admin user</span>
+            <span>Admin user</span>
           </label>
 
           <div className="rounded-lg border border-base-300 p-3 space-y-2">

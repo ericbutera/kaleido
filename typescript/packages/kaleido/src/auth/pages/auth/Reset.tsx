@@ -49,7 +49,7 @@ function ResetForm() {
         />
         <label className="label">New password</label>
         <input
-          className="input input-bordered w-full"
+          className="input w-full"
           {...register("password", { required: true })}
         />
         <button className="btn btn-primary mt-4">Reset</button>

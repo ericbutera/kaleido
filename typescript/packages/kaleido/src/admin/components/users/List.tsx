@@ -80,12 +80,12 @@ export default function List({ onSelectUser }: ListProps) {
           <input
             type="search"
             placeholder="Search name or email"
-            className="input input-sm input-bordered w-56"
+            className="input input-sm w-56"
             value={params.q || ""}
             onChange={(e) => setFilter("q", e.target.value)}
           />
           <select
-            className="select select-sm select-bordered w-40"
+            className="select select-sm w-40"
             value={params.disabled || ""}
             onChange={(e) => setFilter("disabled", e.target.value)}
           >

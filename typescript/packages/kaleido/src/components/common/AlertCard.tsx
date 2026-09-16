@@ -14,7 +14,7 @@ export default function AlertCard({
 }) {
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-primary/10 to-secondary/10">
-      <div className="card bg-base-100 shadow-soft hover:shadow-medium transition-shadow border border-base-300 w-full max-w-md mx-4">
+      <div className="card bg-base-100 shadow-xl border border-base-300 w-full max-w-md mx-4">
         <div className="card-body p-8">
           <h2 className="card-title text-2xl mb-4">
             {icon && (
