@@ -1,6 +1,6 @@
 [package]
 name = "kaleido"
-version = "0.9.0"
+version = "0.10.0"
 edition = "2021"
 description = "Shared auth, background jobs, and application utilities for Kaleido apps"
 license = "MIT"
