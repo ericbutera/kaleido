@@ -12,6 +12,9 @@ type QueryClientLike = {
   clear: () => unknown;
 };
 
+const CURRENT_USER_STALE_TIME_MS = 30 * 60 * 1000;
+const CURRENT_USER_GC_TIME_MS = 60 * 60 * 1000;
+
 export interface AuthOpenApiMapping {
   currentPath: string;
   loginPath: string;
@@ -173,6 +176,7 @@ export function createKaleidoOpenApiAuthClient(
     },
 
     useVerifyEmail: () => {
+      const queryClient = options.useQueryClient();
       const mutation = (options.api.useMutation as any)(
         "get",
         mapping.verifyPath,
@@ -182,6 +186,10 @@ export function createKaleidoOpenApiAuthClient(
         mutateAsync: async (token: string, setError?: UseFormSetError<any>) => {
           try {
             await mutation.mutateAsync({ params: { path: { token } } });
+            await Promise.all([
+              queryClient.invalidateQueries({ queryKey: currentUserQueryKey }),
+              queryClient.refetchQueries({ queryKey: currentUserQueryKey }),
+            ]);
           } catch (err) {
             setFieldErrors(err, setError, "Verification failed");
             throw err;
@@ -218,7 +226,15 @@ export function createKaleidoOpenApiAuthClient(
         "get",
         mapping.currentPath,
         {
-          options: { enabled: true, retry: false },
+          options: {
+            enabled: true,
+            gcTime: CURRENT_USER_GC_TIME_MS,
+            refetchOnMount: false,
+            refetchOnReconnect: false,
+            refetchOnWindowFocus: false,
+            retry: false,
+            staleTime: CURRENT_USER_STALE_TIME_MS,
+          },
         },
       );
 
@@ -254,6 +270,7 @@ export function createKaleidoOpenApiAuthClient(
     },
 
     useTokenRefresh: () => {
+      const queryClient = options.useQueryClient();
       const mutation = (options.api.useMutation as any)(
         "post",
         mapping.refreshPath,
@@ -262,6 +279,10 @@ export function createKaleidoOpenApiAuthClient(
       return {
         mutateAsync: async () => {
           await mutation.mutateAsync({});
+          await Promise.all([
+            queryClient.invalidateQueries({ queryKey: currentUserQueryKey }),
+            queryClient.refetchQueries({ queryKey: currentUserQueryKey }),
+          ]);
         },
         isPending: mutation.isPending,
       };
