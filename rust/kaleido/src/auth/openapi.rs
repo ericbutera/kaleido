@@ -3,6 +3,7 @@
 // include auth endpoints and components succinctly.
 
 pub mod paths {
+    pub use crate::auth::controllers::admin::{disable_user, get_user, list_users, update_user};
     // Re-export the original path functions
     pub use crate::auth::controllers::auth::{
         current, forgot_password, login, logout, refresh, register, resend_confirmation,
@@ -12,6 +13,9 @@ pub mod paths {
 
     // Re-export the utoipa-generated marker types so downstream `derive(OpenApi)`
     // can resolve the path markers from this module (e.g. `auth::openapi::paths::register`).
+    pub use crate::auth::controllers::admin::{
+        __path_disable_user, __path_get_user, __path_list_users, __path_update_user,
+    };
     pub use crate::auth::controllers::auth::{
         __path_current, __path_forgot_password, __path_login, __path_logout, __path_refresh,
         __path_register, __path_resend_confirmation, __path_reset_password, __path_verify_email,
@@ -22,6 +26,9 @@ pub mod paths {
 }
 
 pub mod schemas {
+    pub use crate::auth::controllers::admin::{
+        AdminUserResponse, AdminUsersListResponse, DisableUserRequest, UpdateUserRequest,
+    };
     pub use crate::auth::controllers::auth::MessageResponse;
     pub use crate::auth::controllers::oauth::OAuthProvidersResponse;
     pub use crate::auth::services::oauth_provider_service::OAuthProviderMetadata;

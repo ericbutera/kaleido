@@ -58,6 +58,13 @@ impl ApiClientIdentity {
 pub trait AuthStorage: Send + Sync {
     fn db(&self) -> &DatabaseConnection;
     fn jwt_secret(&self) -> &str;
+
+    /// Return the local development user identity when the application has
+    /// explicitly enabled local-admin mode. Production implementations should
+    /// leave this disabled.
+    fn local_admin_user_pid(&self) -> Option<Uuid> {
+        None
+    }
 }
 
 fn extract_cookie(headers: &axum::http::HeaderMap, name: &str) -> Result<String, AuthError> {
@@ -89,6 +96,13 @@ where
         let storage: Arc<T> = FromRef::from_ref(state);
         let headers = &parts.headers;
         let mut cookie_error: Option<AuthError> = None;
+
+        if let Some(user_pid) = storage.local_admin_user_pid() {
+            return Ok(AuthInfo::new(
+                Some(AuthIdentity::User(UserIdentity { user_pid })),
+                None,
+            ));
+        }
 
         if let Ok(token) = extract_cookie(headers, REFRESH_COOKIE_NAME) {
             match verify_refresh_token(storage.db(), &token).await {

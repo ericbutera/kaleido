@@ -94,7 +94,7 @@ where
     tag = "admin",
     security(("bearer_auth" = []))
 )]
-async fn list_users<S>(
+pub async fn list_users<S>(
     _admin: AdminUserContext<S>,
     State(state): State<Arc<S>>,
     Query(params): Query<AdminUsersQuery>,
@@ -143,7 +143,7 @@ where
     tag = "admin",
     security(("bearer_auth" = []))
 )]
-async fn get_user<S>(
+pub async fn get_user<S>(
     _admin: AdminUserContext<S>,
     State(state): State<Arc<S>>,
     Path(id): Path<i32>,
@@ -173,7 +173,7 @@ where
     tag = "admin",
     security(("bearer_auth" = []))
 )]
-async fn update_user<S>(
+pub async fn update_user<S>(
     _admin: AdminUserContext<S>,
     State(state): State<Arc<S>>,
     Path(id): Path<i32>,
@@ -219,7 +219,7 @@ pub struct DisableUserRequest {
     tag = "admin",
     security(("bearer_auth" = []))
 )]
-async fn disable_user<S>(
+pub async fn disable_user<S>(
     _admin: AdminUserContext<S>,
     State(state): State<Arc<S>>,
     Path(id): Path<i32>,
